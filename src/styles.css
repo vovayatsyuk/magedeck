@@ -1,0 +1,812 @@
+:root {
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Cantarell, Ubuntu, 'Noto Sans',
+    'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono',
+    'Liberation Mono', monospace;
+
+  --bg-list: #fbfbfc;
+  --bg-rail: #eceef1;
+  --bg-panel: #f1f2f5;
+  --bg-chrome: #f6f7f9;
+  --bg-white: #fff;
+  /* The light grey-blue behind chips and menu-row hovers. */
+  --bg-tint: #eef1f5;
+
+  --border: #cdd1d7;
+  --border-soft: #e0e3e8;
+  --border-faint: #f0f2f5;
+  --divider: #d6d9de;
+
+  --text: #16181c;
+  --text-strong: #1c2027;
+  --text-mid: #3b4048;
+  --text-soft: #686f7a;
+  --text-dim: #757a80;
+  --text-hint: #9aa1ab;
+  --text-faint: #a7adb6;
+
+  --blue: #2f6bd8;
+  --blue-dark: #1f4fa8;
+  --blue-tint: #eef4fe;
+  --green: #3f9a54;
+  --green-dark: #2f8a4c;
+  --red: #cf5540;
+
+  --hover-rail: #dcdee2;
+  --hover-icon: #c5cad1;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-chrome);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  /* This WebKitGTK build only understands the prefixed form; the unprefixed
+     one is silently ignored, so both are needed. */
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html {
+  cursor: default;
+}
+
+input:not([type='checkbox']),
+textarea,
+[contenteditable] {
+  cursor: text;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--blue-dark);
+}
+
+/* Drawn by hand: WebKitGTK renders the native indeterminate box as a wide
+   pill, a different shape from its own checked/unchecked square, and it
+   ignores width/height on the control. */
+input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-white);
+  cursor: default;
+}
+
+input[type='checkbox']:checked,
+input[type='checkbox']:indeterminate {
+  border-color: var(--blue);
+  background-color: var(--blue);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px;
+}
+
+input[type='checkbox']:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3 4.9 8.6 9.4 3.7' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+input[type='checkbox']:indeterminate {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.2 6h5.6' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c3c7ce;
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ── Layout utilities ─────────────────────────────────────────────── */
+
+/* The item that takes the leftover room in a row and lets its text
+   ellipsize instead of pushing its neighbours out. */
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Type ─────────────────────────────────────────────────────────── */
+
+/* The small caps over a column of content. */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* The same idea over a single field: a touch heavier and less spaced out,
+   so it reads as a caption rather than a section. */
+.flabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.req {
+  color: var(--red);
+  font-style: normal;
+  margin-left: 2px;
+}
+
+/* The line a list shows in place of rows: nothing found, too many to list. */
+.note {
+  padding: 10px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  color: var(--blue);
+}
+
+.link:hover {
+  color: var(--blue-dark);
+}
+
+/* ── Icons ────────────────────────────────────────────────────────── */
+
+/* 15px is the drawing's native grid and the crispest; `sm` is the size an
+   icon takes next to 11–12px text, `xs` the one inside a chip. */
+.icon {
+  flex: none;
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.icon.sm {
+  width: 12px;
+  height: 12px;
+}
+
+.icon.xs {
+  width: 10px;
+  height: 10px;
+}
+
+/* A bare icon that answers to a click: the hover square is the only thing
+   that says so. */
+.glyph {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: #7d848e;
+  cursor: default;
+}
+
+.glyph:hover {
+  background: var(--hover-icon);
+}
+
+.glyph .icon,
+.link .icon,
+.clear .icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* The round × that empties a field or a selection. */
+.clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: #fff;
+  background: #b8bec6;
+}
+
+.clear:hover {
+  background: var(--text-dim);
+}
+
+/* The magnifier a search field leads with. */
+.mag {
+  color: var(--text-hint);
+}
+
+/* ── Form controls ────────────────────────────────────────────────── */
+
+/* The face every boxed control shares: text inputs, selects, search fields
+   and the pickers that have to read as one of them. Height is a minimum so
+   a control that grows with its content (the module picker) keeps it. */
+.field {
+  width: 100%;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-white);
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text);
+  outline: 0;
+  box-shadow: inset 0 1px 2px rgba(15, 20, 30, 0.05);
+}
+
+.field.bad {
+  border-color: var(--red);
+}
+
+/* The native menu stays — a custom dropdown would be a component — but its
+   chrome does not: left alone, the engine draws its own grey button and
+   arrow, which reads as a different control from the inputs around it.
+   Must follow `.field`, whose background shorthand would drop the arrow. */
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: default;
+  padding-right: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1.2 5 5 9 1.2' fill='none' stroke='%236b727c' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  background-size: 10px;
+}
+
+/* The same face around something else — an icon and an input, or a row of
+   chips — instead of being the input itself. */
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+/* The input inside one of those: the box draws the face, not the input. */
+.bare-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* A field and its caption, stacked. */
+.form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Two or three exclusive choices, sharing one track. */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: #e4e7ec;
+  border-radius: 7px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 5px 0;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+.tab.on {
+  background: #fff;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+
+/* Real <button>s, so the engine's own face is stripped first: its font,
+   margin and appearance would otherwise override the look below. */
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  font-family: inherit;
+  line-height: normal;
+  cursor: default;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-mid);
+  background: linear-gradient(180deg, #fff, #f0f1f4);
+  border: 1px solid #c6cad1;
+  border-radius: 7px;
+}
+
+/* A ring for keyboard focus only: WebKitGTK focuses a button on click too,
+   and a ring after every click would be noise. */
+.btn:focus {
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline-offset: 1px;
+}
+
+.btn:hover {
+  background: #eceef2;
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(180deg, #4a80e0, #2f6bd8);
+  border-color: #2a5fbf;
+  box-shadow: 0 1px 2px rgba(20, 50, 110, 0.28);
+}
+
+.btn-primary:hover {
+  background: #2a5fbf;
+}
+
+.btn-danger {
+  color: #fff;
+  background: linear-gradient(180deg, #dc6a55, #cf5540);
+  border-color: #b3462f;
+  box-shadow: 0 1px 2px rgba(20, 50, 110, 0.28);
+}
+
+.btn-danger:hover {
+  background: #c24c38;
+}
+
+/* The click is refused in the store; this only has to look unavailable. */
+.btn.off {
+  opacity: 0.45;
+}
+
+/* ── Chips ────────────────────────────────────────────────────────── */
+
+.chip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  min-height: 18px;
+  padding: 0 4px 0 6px;
+  font-size: 10.5px;
+  font-family: var(--mono);
+  color: var(--text-mid);
+  background: var(--bg-tint);
+  border: 1px solid #dcdfe4;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.chip .x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+
+.chip .x:hover {
+  background: var(--hover-icon);
+  color: var(--red);
+}
+
+.chip .x .icon {
+  width: 10px;
+  height: 10px;
+}
+
+/* ── Panels ───────────────────────────────────────────────────────── */
+
+/* The bar over a column of content. Fixed height, not padding-derived: the
+   module list's header and the side panel's must line up exactly, and only
+   one of them has a checkbox in it. The border is the list's rule; a panel
+   without one keeps it transparent so both content boxes stay 29px. */
+.panel-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 14px;
+  border-bottom: 1px solid transparent;
+}
+.panel-head .actions,
+.row .actions {
+  margin: -4px 0;
+  color: var(--text-soft);
+  display: none;
+  gap: 1px;
+}
+.panel-head .actions:hover,
+.row .actions:hover {
+  color: #2b3038;
+}
+.panel-head:hover .actions,
+.panel-head.editing .actions,
+.row:hover .actions,
+.row.editing .actions {
+  display: flex;
+}
+
+/* A module's name wherever it is listed. */
+.pickname {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-strong);
+}
+
+/* Already in the filter. */
+.pickrow.on .pickname {
+  color: var(--blue-dark);
+}
+
+/* Disabled modules, dimmed as in the module list. Last, so a module that is
+   both picked and disabled still reads as disabled. */
+.pickrow.disabled .pickname {
+  color: var(--text-soft);
+}
+
+/* ── Module rows ─────────────────────────────────────────────────── */
+
+/* The central list's rows, and a preset's list in its dialog. The grid is
+   the central list's; a list without checkboxes sets its own columns. */
+.modrow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 44px;
+  align-items: center;
+  padding: 0 16px;
+  height: 34px;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.modrow:hover {
+  background: #f2f5fb;
+}
+
+.modname.off {
+  color: var(--text-soft);
+}
+
+/* Flex so a long name ellipsizes before the lock, never over it. */
+.modname {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  transition: color 0.15s ease;
+  font-size: 12.5px;
+  line-height: 1.6;
+  font-family: var(--mono);
+  color: var(--text-strong);
+}
+
+.modname .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockwrap {
+  flex: none;
+  display: flex;
+  color: var(--text-dim);
+}
+
+.statuswrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* A span, not a checkbox: pseudo-elements on form controls are not reliably
+   rendered. */
+.toggle {
+  display: block;
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid #cdd1d7;
+  background: #e4e7eb;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.toggle.on {
+  background: var(--green);
+  border-color: #35803f;
+}
+
+.knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.toggle.on .knob {
+  transform: translateX(12px);
+}
+
+/* While its command runs, the knob becomes the ring. The ring is a child so
+   the knob keeps its `translateX`: both want `transform`, and one animation
+   on the knob itself would snap it back to the off position mid-run. */
+.toggle.busy .knob {
+  background: transparent;
+  box-shadow: none;
+}
+.toggle.busy .knob::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  animation: mm-spin 0.7s linear infinite;
+}
+
+/* White on the green track, dark on the grey one. */
+.toggle.busy:not(.on) .knob::after {
+  border-color: rgba(43, 48, 56, 0.2);
+  border-top-color: #6b727c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle.busy .knob {
+    background: #fff;
+  }
+  .toggle.busy .knob::after {
+    animation: none;
+    opacity: 0.55;
+  }
+
+  .toggle,
+  .knob {
+    transition: none;
+  }
+}
+
+/* ── Cards ────────────────────────────────────────────────────────── */
+
+/* History, snapshots and presets: one look for all three. Spacing around a
+   list is the panel's own; everything inside a card is shared. */
+.cards {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cards .hint {
+  font-size: 11.5px;
+  color: var(--text-hint);
+  line-height: 1.5;
+}
+
+.card {
+  position: relative;
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 8px 9px;
+}
+
+/* A title over a meta line, with its buttons at the end. */
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card .name {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2b3038;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card .meta {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.card .actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+/* A glyph a size up, on the white of the card. */
+.card .act {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--text-soft);
+}
+
+.card .act:hover {
+  background: #eef0f3;
+}
+
+.card .act.play:hover {
+  color: var(--green-dark);
+}
+
+.card .act.edit:hover {
+  color: var(--blue);
+}
+
+.card .act.del {
+  color: var(--text-hint);
+}
+
+.card .act.del:hover {
+  color: var(--red);
+}
+
+/* Buttons that appear only while the pointer is on the card. */
+.card .hover-only {
+  visibility: hidden;
+}
+
+.card:hover .hover-only {
+  visibility: visible;
+}
+
+/* A button's own 20px, so swapping one for the other shifts nothing. */
+.card .spinslot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.card.grab {
+  cursor: grab;
+}
+
+.card.grab:active {
+  cursor: grabbing;
+  border-color: var(--hover-icon);
+}
+
+/* ── Indicators ───────────────────────────────────────────────────── */
+
+@keyframes mm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.filter-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--blue);
+  animation: mm-spin 0.7s linear infinite;
+}
+
+/* A ring around a dot rather than in its place: the colour it carries stays
+   readable while its command runs, and nothing shifts. */
+.spinning {
+  position: relative;
+}
+
+.spinning::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-top-color: var(--blue);
+  animation: mm-spin 0.7s linear infinite;
+}
+
+.warn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────── */
+
+/* Only moves matter in a reorder: nothing enters or leaves. */
+.reorder-move {
+  transition: transform 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reorder-move {
+    transition: none;
+  }
+
+  .spinning::after {
+    animation: none;
+    border-color: rgba(47, 107, 216, 0.45);
+  }
+}
