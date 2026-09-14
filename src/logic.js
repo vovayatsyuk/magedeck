@@ -2,6 +2,15 @@
 
 export const BUILTIN_FILTERS = ['All modules', 'Enabled', 'Disabled', 'Selected', 'Locked'];
 
+// Locked draws a lock instead of a dot.
+export const BUILTIN_DOTS = {
+  'All modules': '#ffffff',
+  Enabled: '#3f9a54',
+  Disabled: '#cf5540',
+  Selected: '#2f6bd8',
+  Locked: null,
+};
+
 // `-term` still excludes: filters saved before `!` was adopted hold
 // `-Magento_`. The trailing `.` keeps a lone `!` or `-` an ordinary term.
 const NEGATED = /^[!-]./;

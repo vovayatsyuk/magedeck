@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, nextTick, onMounted, onUnmounted, watch, watchEffect } from 'vue';
 import { state, visible, toggleModule, toggleAll, setCheckedRange, setQuery, selected, openDialog, apply, addToFilter, removeFromFilter, addToPreset, removeFromPreset, confirmPresetAdd, confirmLock, lockedSet, unlockModules, isEditableFilter, openAddModules, setFilter } from '../store.js';
-import { plural } from '../logic.js';
+import { plural, BUILTIN_DOTS } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
 const searchEl = ref(null);
@@ -131,6 +131,30 @@ function toggleOne(m) {
 const editable = computed(() => isEditableFilter(state.filter));
 const filterName = computed(() => state.filters.find((f) => f.id === state.filter)?.name ?? state.filter);
 
+/** The filter the search runs in, as a chip at the start of the field. All
+ *  modules is no narrowing, so it gets none. */
+const filterChip = computed(() => {
+  if (state.filter === 'All modules') return null;
+  const saved = state.filters.find((f) => f.id === state.filter);
+  return { name: filterName.value, dot: saved ? saved.color : BUILTIN_DOTS[state.filter], locked: state.filter === 'Locked' };
+});
+
+/** Backspace before the first character takes the chip, as in a token field. */
+function onSearchKeydown(e) {
+  if (e.key !== 'Backspace' || !filterChip.value) return;
+  const el = e.target;
+  if (el.selectionStart !== 0 || el.selectionEnd !== 0) return;
+  e.preventDefault();
+  setFilter('All modules');
+}
+
+/** A press anywhere in the box but the input still lands in it. */
+function focusSearch(e) {
+  if (e.target === searchEl.value) return;
+  e.preventDefault();
+  searchEl.value?.focus();
+}
+
 /** Which of the header's menus is open: 'filter', 'preset', or neither. */
 const menu = ref(null);
 const addRoot = ref(null);
@@ -210,18 +234,25 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
 <template>
   <div class="list">
     <div class="searchbar" data-tauri-drag-region>
-      <div class="field field-row">
+      <div class="field field-row" @mousedown="focusSearch">
         <Icon name="search" class="mag" />
+        <span v-if="filterChip" class="chip filterchip" :title="`Searching in “${filterChip.name}”`">
+          <Icon v-if="filterChip.locked" name="lock" class="lockmark" />
+          <span v-else class="filter-dot" :style="{ background: filterChip.dot }"></span>
+          <span class="chipname">{{ filterChip.name }}</span>
+          <span class="x" title="Search all modules" @click="setFilter('All modules')"><Icon name="cross" /></span>
+        </span>
         <input
           ref="searchEl"
           class="bare-input"
           :value="state.query"
-          placeholder="Search modules and groups"
+          :placeholder="filterChip ? 'Search this filter' : 'Search modules and groups'"
           spellcheck="false"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
           @input="setQuery($event.target.value)"
+          @keydown="onSearchKeydown"
         />
         <span v-if="!state.query" class="hint">⌘F</span>
         <span v-else class="clear" title="Clear" @click="setQuery('')"><Icon name="cross" /></span>
@@ -387,6 +418,30 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
 
 .field {
   flex: 1;
+}
+
+/* A filter name, not a module name: the rail's face, not the chip's mono. */
+.filterchip {
+  gap: 5px;
+  max-width: 45%;
+  min-height: 20px;
+  padding-left: 7px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  word-break: normal;
+}
+
+.filterchip .lockmark {
+  width: 10px;
+  height: 10px;
+  margin: 0 -1px;
+  color: var(--text-soft);
+}
+
+.chipname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hint {

@@ -1,18 +1,10 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { state, filterMembers, movableIn, setFilter, applyFilter, openDialog, confirmDelete, deleteFilter, moveFilter, persistFilters, presetPlan, applyPreset, deletePreset, movePreset, persistPresets } from '../store.js';
-import { plural } from '../logic.js';
+import { plural, BUILTIN_DOTS } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
 const editing = ref(false);
-
-const BUILTIN_DOTS = {
-  'All modules': '#ffffff',
-  Enabled: '#3f9a54',
-  Disabled: '#cf5540',
-  Selected: '#2f6bd8',
-  Locked: null,
-};
 
 const NO_ACTIONS = ['All modules', 'Enabled', 'Locked'];
 
