@@ -308,7 +308,14 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
           @mousedown.prevent="onRowDown(m, $event)"
         >
           <div>
-            <input type="checkbox" tabindex="-1" :checked="!!state.checked[m.name]" />
+            <!-- Space is handled here, not by @change: a mouse press already
+                 toggles on the row, and a change handler would undo it. -->
+            <input
+              type="checkbox"
+              :aria-label="`Select ${m.name}`"
+              :checked="!!state.checked[m.name]"
+              @keydown.space.prevent="toggleModule(m.name, $event)"
+            />
           </div>
           <div class="modname" :class="{ off: !m.on }">
             <span class="text">{{ m.name }}</span>

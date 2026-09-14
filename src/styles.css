@@ -103,6 +103,11 @@ input[type='checkbox'] {
   cursor: default;
 }
 
+input[type='checkbox']:focus-visible {
+  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline-offset: 1px;
+}
+
 input[type='checkbox']:checked,
 input[type='checkbox']:indeterminate {
   border-color: var(--blue);
