@@ -16,7 +16,7 @@ const BUILTIN_DOTS = {
 
 const NO_ACTIONS = ['All modules', 'Enabled', 'Locked'];
 
-const PLAIN_COUNTS = ['Enabled', 'Disabled', 'Selected'];
+const PLAIN_COUNTS = ['Enabled', 'Disabled', 'Selected', 'Locked'];
 
 // Count covers every member; ▶ and ■ only the ones this row may move.
 const tally = (key, members, plain = false) => {

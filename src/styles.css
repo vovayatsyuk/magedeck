@@ -194,6 +194,21 @@ input[type='checkbox']:indeterminate {
   color: var(--blue-dark);
 }
 
+/* A real button where the link must be reachable by Tab. */
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: default;
+}
+
+.link:focus-visible {
+  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
 /* ── Icons ────────────────────────────────────────────────────────── */
 
 /* 15px is the drawing's native grid and the crispest; `sm` is the size an

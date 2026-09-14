@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, nextTick, onMounted, onUnmounted, watch, watchEffect } from 'vue';
-import { state, visible, toggleModule, toggleAll, setCheckedRange, setQuery, selected, openDialog, apply, addToFilter, removeFromFilter, addToPreset, removeFromPreset, confirmPresetAdd, confirmLock, lockedSet, unlockModules, isEditableFilter, openAddModules } from '../store.js';
+import { state, visible, toggleModule, toggleAll, setCheckedRange, setQuery, selected, openDialog, apply, addToFilter, removeFromFilter, addToPreset, removeFromPreset, confirmPresetAdd, confirmLock, lockedSet, unlockModules, isEditableFilter, openAddModules, setFilter } from '../store.js';
 import { plural } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
@@ -129,6 +129,7 @@ function toggleOne(m) {
 }
 
 const editable = computed(() => isEditableFilter(state.filter));
+const filterName = computed(() => state.filters.find((f) => f.id === state.filter)?.name ?? state.filter);
 
 /** Which of the header's menus is open: 'filter', 'preset', or neither. */
 const menu = ref(null);
@@ -337,6 +338,9 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
       <div v-if="state.modulesError" class="empty problem">
         <span class="warn">!</span>
         <span>{{ state.modulesError }}</span>
+      </div>
+      <div v-else-if="!visible.length && state.query && state.filter !== 'All modules'" class="empty">
+        Nothing found for “{{ state.query }}” in “{{ filterName }}” filter. <button type="button" class="link" @click="setFilter('All modules')">Search everywhere</button>
       </div>
       <div v-else-if="!visible.length && state.query" class="empty">Nothing found for “{{ state.query }}”</div>
       <div v-else-if="!visible.length && editable && state.modules.length" class="empty">
