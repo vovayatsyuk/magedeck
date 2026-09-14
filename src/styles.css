@@ -373,25 +373,47 @@ button.link {
 /* ── Buttons ──────────────────────────────────────────────────────── */
 
 /* Real <button>s, so the engine's own face is stripped first: its font,
-   margin and appearance would otherwise override the look below. */
+   margin and appearance would otherwise override the look below.
+
+   The secondary face is the default one: a 30px pill with a one-pixel top
+   highlight and a shadow that turns inward on press. */
 .btn {
   -webkit-appearance: none;
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   font-family: inherit;
-  line-height: normal;
+  line-height: 1;
   cursor: default;
-  padding: 6px 14px;
-  font-size: 12.5px;
+  height: 30px;
+  padding: 0 16px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-mid);
-  background: linear-gradient(180deg, #fff, #f0f1f4);
-  border: 1px solid #c6cad1;
-  border-radius: 7px;
+  letter-spacing: -0.005em;
+  color: #1d1d1f;
+  background: linear-gradient(180deg, #fff, #fbfbfc);
+  border: 1px solid #cdcdd2;
+  border-radius: 6px;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, #fafafb, #f2f2f4);
+  border-color: #c6c6cb;
+}
+
+.btn:active {
+  background: #e8e8ec;
+  border-color: #bdbdc3;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* A ring for keyboard focus only: WebKitGTK focuses a button on click too,
-   and a ring after every click would be noise. */
+   and a ring after every click would be noise. An offset outline rather than
+   the design's flush shadow: it reads the same on every variant, and it is
+   the ring the fields, links and checkboxes here already use. */
 .btn:focus {
   outline: none;
 }
@@ -401,35 +423,73 @@ button.link {
   outline-offset: 1px;
 }
 
-.btn:hover {
-  background: #eceef2;
-}
-
+/* The filled faces carry no border, so their height comes from the padding
+   box alone — the same 30px the bordered one lands on. */
 .btn-primary {
   color: #fff;
-  background: linear-gradient(180deg, #4a80e0, #2f6bd8);
-  border-color: #2a5fbf;
-  box-shadow: 0 1px 2px rgba(20, 50, 110, 0.28);
+  background: linear-gradient(180deg, #3b82f6, #1f6feb);
+  border: none;
+  padding: 0 17px;
+  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
 }
 
 .btn-primary:hover {
-  background: #2a5fbf;
+  background: linear-gradient(180deg, #2f78f0, #1a63d6);
+  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+.btn-primary:active {
+  background: linear-gradient(180deg, #1b60cf, #1553b8);
+  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.34),
+    inset 0 1px 2px rgba(8, 22, 48, 0.4);
 }
 
 .btn-danger {
   color: #fff;
-  background: linear-gradient(180deg, #dc6a55, #cf5540);
-  border-color: #b3462f;
-  box-shadow: 0 1px 2px rgba(20, 50, 110, 0.28);
+  background: linear-gradient(180deg, #ec5f63, #d93c42);
+  border: none;
+  padding: 0 17px;
+  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
 }
 
 .btn-danger:hover {
-  background: #c24c38;
+  background: linear-gradient(180deg, #e4535a, #c9333a);
+  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.11);
 }
 
-/* The click is refused in the store; this only has to look unavailable. */
-.btn.off {
-  opacity: 0.45;
+.btn-danger:active {
+  background: linear-gradient(180deg, #c4343b, #ad2b32);
+  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.34),
+    inset 0 1px 2px rgba(48, 8, 10, 0.42);
+}
+
+/* The click is refused in the store; this only has to look unavailable, so
+   the face flattens and stops answering the pointer. */
+.btn.off,
+.btn.off:hover,
+.btn.off:active {
+  opacity: 0.4;
+  background: #fff;
+  border-color: #cdcdd2;
+  box-shadow: none;
+}
+
+.btn-primary.off,
+.btn-primary.off:hover,
+.btn-primary.off:active {
+  background: #1f6feb;
+  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.28);
+}
+
+.btn-danger.off,
+.btn-danger.off:hover,
+.btn-danger.off:active {
+  background: #d93c42;
+  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.28);
 }
 
 /* ── Chips ────────────────────────────────────────────────────────── */
