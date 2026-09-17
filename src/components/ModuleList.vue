@@ -274,19 +274,16 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
       <span class="count">{{ visible.length }}</span>
       <div class="grow"></div>
       <div v-if="selected.length" ref="addRoot" class="addto">
+        <div
+          class="link"
+          :title="allLocked ? 'Unlock these modules' : 'Lock these modules'"
+          @click="toggleLocked"
+        >
+          <Icon name="lock" />{{ allLocked ? 'Unlock' : 'Lock' }}
+        </div>
         <div class="link savefilter" @click="toggleMenu('filter')">
           <Icon name="plus" />Add to filter
           <div v-if="menu === 'filter'" class="addmenu" @click.stop>
-            <div
-              class="additem"
-              :title="allLocked ? 'Unlock these modules' : 'Lock these modules'"
-              @click="toggleLocked"
-            >
-              <Icon name="lock" class="lockmark" />
-              <span class="fname">Locked</span>
-              <Icon v-if="allLocked" name="check" class="ftick" />
-            </div>
-            <div v-if="state.filters.length" class="addsep"></div>
             <div
               v-for="f in state.filters"
               :key="f.id"
@@ -298,7 +295,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
               <span class="fname">{{ f.name }}</span>
               <Icon v-if="grouped(f)" name="check" class="ftick" />
             </div>
-            <div class="addsep"></div>
+            <div v-if="state.filters.length" class="addsep"></div>
             <div class="additem new" title="Save these as a new filter" @click="saveAsFilter">
               <Icon name="plus" class="plus" />
               <span class="fname">New filter…</span>
@@ -526,9 +523,8 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
   background: var(--border-soft);
 }
 
-/* Both take a dot's 7px in the layout, like the rail's Locked row, so the
-   names line up: drawn wider, with the margins giving the difference back. */
-.additem .lockmark,
+/* Takes a dot's 7px in the layout so the names line up: drawn wider, with
+   the margins giving the difference back. */
 .additem .plus {
   width: 11px;
   height: 11px;
@@ -539,10 +535,6 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
 .nomark {
   flex: none;
   width: 7px;
-}
-
-.additem .lockmark {
-  color: var(--text-soft);
 }
 
 .additem.new {
