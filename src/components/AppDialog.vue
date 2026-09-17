@@ -2,7 +2,7 @@
 // One dialog for every prompt, switched on `state.dialog.kind`: addModules,
 // apply, alert, confirm, delete, filter, install, preset. The pieces are opt-in per kind.
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect } from 'vue';
-import { state, closeDialog, dialogPrimary, dialogAction, dialogCommand, requiredFields, missingFields, browseFolder, browseKey, hostTyped, pathTyped, addCandidates, addAllTargets, toggleAddPick, openFormAddModules, lockedSet } from '../store.js';
+import { state, closeDialog, dialogPrimary, dialogAction, dialogCommand, requiredFields, missingFields, browseFolder, browseKey, hostTyped, pathTyped, addCandidates, addAllTargets, toggleAddPick, openFormAddModules, lockedSet, KEYS } from '../store.js';
 import { enabledFirst, matches, plural } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
@@ -44,7 +44,7 @@ const view = computed(() => {
       picker: true,
       primary: !n ? 'Add modules' : picked ? `Add ${plural(n)}` : `Add all ${plural(n)} listed`,
       primaryOff: !n,
-      hint: picked ? '⌘↩ adds the picked modules · esc to cancel' : 'Click to pick · ⌘↩ adds everything listed',
+      hint: picked ? `${KEYS.confirm} adds the picked modules · esc to cancel` : `Click to pick · ${KEYS.confirm} adds everything listed`,
     };
   }
 
@@ -77,7 +77,7 @@ const view = computed(() => {
       extraActions: actions.slice(0, -1),
       danger: true,
       dismissOnly: !actions.length,
-      hint: actions.length ? '⌘↩ retries' : '⌘↩ or esc to dismiss',
+      hint: actions.length ? `${KEYS.confirm} retries` : `${KEYS.confirm} or esc to dismiss`,
     };
   }
 
@@ -397,7 +397,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
                     :class="{ on: m.on }"
                     role="switch"
                     :aria-checked="m.on"
-                    title="⌥-click to toggle all"
+                    :title="`${KEYS.alt}-click to toggle all`"
                     @mousedown.prevent="flipPreset(m.name, $event)"
                   >
                     <span class="knob"></span>
@@ -506,7 +506,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
       </div>
 
       <div class="foot">
-        <span class="foothint">{{ view.hint || '⌘↩ to confirm · esc to cancel' }}</span>
+        <span class="foothint">{{ view.hint || `${KEYS.confirm} to confirm · esc to cancel` }}</span>
         <button v-if="!view.dismissOnly" type="button" class="btn" @click="closeDialog">Cancel</button>
         <button
           v-for="a in view.extraActions"

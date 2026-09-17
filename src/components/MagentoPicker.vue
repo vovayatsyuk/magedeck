@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { state, magento, displayPath, selectMagento, reloadModules, openDialog, confirmDelete, deleteMagento, moveMagento, persistMagentos } from '../store.js';
+import { state, magento, displayPath, selectMagento, reloadModules, openDialog, confirmDelete, deleteMagento, moveMagento, persistMagentos, KEYS } from '../store.js';
 import Icon from './icons/Icon.vue';
 
 const open = ref(false);
@@ -239,7 +239,7 @@ onUnmounted(() => {
             class="dot"
             :class="{ off: m.id !== state.magentoId, spinning: m.id === state.magentoId && slow }"
           ></span>
-          <div class="grow" :title="m.id === state.magentoId ? `${displayPath(m)}\nClick or ⌘R to reload its modules` : displayPath(m)">
+          <div class="grow" :title="m.id === state.magentoId ? `${displayPath(m)}\nClick or ${KEYS.reload} to reload its modules` : displayPath(m)">
             <div class="itemmeta">{{ m.title }}</div>
             <div class="itempath">
               <span class="dir">{{ parts(m).dir }}</span><span class="base">{{ parts(m).base }}</span>

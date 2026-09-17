@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, nextTick, onMounted, onUnmounted, watch, watchEffect } from 'vue';
-import { state, visible, toggleModule, toggleAll, setCheckedRange, setQuery, selected, openDialog, apply, addToFilter, removeFromFilter, addToPreset, removeFromPreset, confirmPresetAdd, confirmLock, lockedSet, unlockModules, isEditableFilter, openAddModules, setFilter } from '../store.js';
+import { state, visible, toggleModule, toggleAll, setCheckedRange, setQuery, selected, openDialog, apply, addToFilter, removeFromFilter, addToPreset, removeFromPreset, confirmPresetAdd, confirmLock, lockedSet, unlockModules, isEditableFilter, openAddModules, setFilter, KEYS } from '../store.js';
 import { plural, BUILTIN_DOTS } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
@@ -148,8 +148,6 @@ function onSearchKeydown(e) {
   setFilter('All modules');
 }
 
-const isMac = /Mac/.test(navigator.platform || navigator.userAgent);
-
 /** A press anywhere in the box but the input still lands in it. */
 function focusSearch(e) {
   if (e.target === searchEl.value) return;
@@ -256,7 +254,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
           @input="setQuery($event.target.value)"
           @keydown="onSearchKeydown"
         />
-        <span v-if="!state.query" class="hint">{{ isMac ? '⌘K' : 'Ctrl K' }}</span>
+        <span v-if="!state.query" class="hint">{{ KEYS.search }}</span>
         <span v-else class="clear" title="Clear" @click="setQuery('')"><Icon name="cross" /></span>
       </div>
     </div>

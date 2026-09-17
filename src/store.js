@@ -17,6 +17,12 @@ import {
   snapshotChanges,
 } from './logic.js';
 
+/** Mac spells its modifiers with symbols; nothing else does. */
+const mac = /Mac/.test(navigator.platform || navigator.userAgent);
+export const KEYS = mac
+  ? { search: '⌘K', confirm: '⌘↩', reload: '⌘R', alt: '⌥' }
+  : { search: 'Ctrl+K', confirm: 'Ctrl+Enter', reload: 'Ctrl+R', alt: 'Alt' };
+
 const GREEN = '#3f9a54';
 const RED = '#d0563e';
 
