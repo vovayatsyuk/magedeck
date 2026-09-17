@@ -148,6 +148,8 @@ function onSearchKeydown(e) {
   setFilter('All modules');
 }
 
+const isMac = /Mac/.test(navigator.platform || navigator.userAgent);
+
 /** A press anywhere in the box but the input still lands in it. */
 function focusSearch(e) {
   if (e.target === searchEl.value) return;
@@ -254,7 +256,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
           @input="setQuery($event.target.value)"
           @keydown="onSearchKeydown"
         />
-        <span v-if="!state.query" class="hint">⌘F</span>
+        <span v-if="!state.query" class="hint">{{ isMac ? '⌘K' : 'Ctrl K' }}</span>
         <span v-else class="clear" title="Clear" @click="setQuery('')"><Icon name="cross" /></span>
       </div>
     </div>

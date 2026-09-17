@@ -42,8 +42,17 @@ function onKeydown(e) {
     if (!open) reloadModules();
     return;
   }
-  if ((e.metaKey || e.ctrlKey) && (e.key === 'f' || e.key === 'F')) {
+  if ((e.metaKey || e.ctrlKey) && /^[fkFK]$/.test(e.key)) {
     e.preventDefault();
+    list.value?.focusSearch();
+    return;
+  }
+
+  // Type-ahead: a printable key pressed outside a field goes to the search
+  // box. Focus moves on keydown, so the character itself lands there, which
+  // is why this must not preventDefault. Space is left alone, it toggles the
+  // focused row.
+  if (!open && e.key.length === 1 && e.key !== ' ' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTextField(document.activeElement)) {
     list.value?.focusSearch();
   }
 }
