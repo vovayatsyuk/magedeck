@@ -8,8 +8,10 @@
     <script>
       // Before first paint: the macOS window hides its title bar and overlays
       // the traffic lights on the sidebar, so the sidebar needs a top inset.
-      if (/Mac/.test(navigator.platform || navigator.userAgent))
-        document.documentElement.classList.add('mac');
+      const platform = navigator.platform || navigator.userAgent;
+      if (/Mac/.test(platform)) document.documentElement.classList.add('mac');
+      // Linux carries a scrollbar workaround of its own, see styles.css.
+      else if (/Linux/.test(platform)) document.documentElement.classList.add('linux');
     </script>
   </head>
 

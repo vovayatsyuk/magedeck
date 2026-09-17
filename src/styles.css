@@ -890,3 +890,13 @@ button.link {
     border-color: rgba(47, 107, 216, 0.45);
   }
 }
+
+/* ── WebKit overlay scrollbars ────────────────────────────────────── */
+
+/* WebKitGTK, so Linux only, paints the thin overlay scrollbar above the
+   whole page, menus and dialogs included: stacking context, z-index and
+   compositing have no say in it. So the list gives up its scrollbar while
+   one of them is open. */
+.linux .window:has(.menu-anchor, .addmenu, .backdrop) .scroll {
+  scrollbar-width: none;
+}
