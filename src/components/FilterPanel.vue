@@ -240,14 +240,14 @@ function removeFilter(f) {
             class="glyph stop"
             title="Disable these modules"
             @click.stop="applyFilter(row.key, 'disable')"
-            ><Icon name="stop" /></span
+            ><Icon name="stop-filled" /></span
           >
           <span
             v-if="row.anyOff"
             class="glyph play"
             title="Enable these modules"
             @click.stop="applyFilter(row.key, 'enable')"
-            ><Icon name="play" /></span
+            ><Icon name="play-filled" /></span
           >
         </span>
       </div>
@@ -281,14 +281,14 @@ function removeFilter(f) {
               class="glyph stop"
               title="Disable these modules"
               @click.stop="applyFilter(row.key, 'disable')"
-              ><Icon name="stop" /></span
+              ><Icon name="stop-filled" /></span
             >
             <span
               v-if="row.anyOff"
               class="glyph play"
               title="Enable these modules"
               @click.stop="applyFilter(row.key, 'enable')"
-              ><Icon name="play" /></span
+              ><Icon name="play-filled" /></span
             >
           </span>
         </div>
@@ -339,7 +339,7 @@ function removeFilter(f) {
               class="glyph act play hover-only"
               :title="`Apply preset: ${row.changes}`"
               @click.stop="applyPreset(row.preset)"
-              ><Icon name="play" /></span
+              ><Icon name="play-filled" /></span
             >
             <span v-else-if="row.on + row.off" class="spinslot applied" title="Preset is in effect"><Icon name="check" /></span>
           </div>

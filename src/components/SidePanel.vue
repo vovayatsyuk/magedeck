@@ -195,7 +195,7 @@ async function restore(s) {
               class="glyph act play"
               title="Restore this snapshot"
               @click="restore(s)"
-              ><Icon name="play" /></span
+              ><Icon name="play-filled" /></span
             >
             <span class="glyph act del" title="Delete snapshot" @click="removeSnapshot(s)"><Icon name="cross" /></span>
           </div>
