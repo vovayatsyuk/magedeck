@@ -68,7 +68,7 @@ onUnmounted(() => observer?.disconnect());
   gap: 12px;
   padding: 10px 16px;
   border-top: 1px solid var(--divider);
-  background: linear-gradient(180deg, #f3f4f7, #e9ebef);
+  background: linear-gradient(180deg, var(--bg-bar-top), var(--bg-bar-bottom));
 }
 
 .label {
@@ -96,8 +96,8 @@ onUnmounted(() => observer?.disconnect());
   max-height: 28px;
   overflow-x: hidden;
   overflow-y: hidden;
-  background: #fdfdfe;
-  border: 1px solid #d9dce1;
+  background: var(--bg-list);
+  border: 1px solid var(--divider);
   border-radius: 6px;
   padding: 3px;
 }
@@ -107,7 +107,7 @@ onUnmounted(() => observer?.disconnect());
   align-content: flex-start;
   max-height: 340px;
   overflow-y: scroll;
-  box-shadow: 0 -8px 24px rgba(15, 20, 30, 0.14);
+  box-shadow: 0 -8px 24px rgba(var(--shadow-rgb), 0.14);
 }
 
 .placeholder {

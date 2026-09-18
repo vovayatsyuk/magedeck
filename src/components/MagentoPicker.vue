@@ -300,8 +300,8 @@ onUnmounted(() => {
   cursor: wait;
 }
 .pill:hover {
-  background: #eef0f3;
-  border-color: #b8bec6;
+  background: var(--bg-tint);
+  border-color: var(--border-strong);
 }
 .pill:hover .label,
 .pill:hover .caret {
@@ -316,7 +316,7 @@ onUnmounted(() => {
 }
 .pill.empty:hover {
   background: var(--blue-tint);
-  border-color: #b6cbf0;
+  border-color: var(--blue-border);
   color: var(--blue-dark);
 }
 
@@ -327,11 +327,11 @@ onUnmounted(() => {
   height: 6px;
   border-radius: 50%;
   flex: none;
-  background: #28c840;
+  background: var(--green-bright);
 }
 
 .dot.off {
-  background: #c3c7ce;
+  background: var(--hover-icon);
 }
 
 .label {
@@ -343,7 +343,7 @@ onUnmounted(() => {
 }
 
 .caret {
-  color: #b0b6be;
+  color: var(--text-faint);
 }
 
 .menu-anchor {
@@ -360,11 +360,11 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 1px;
   padding: 5px;
-  background: #fdfdfe;
+  background: var(--bg-list);
   border-radius: 9px;
   box-shadow:
-    0 0 1px rgba(0, 0, 0, 0.3),
-    0 14px 36px rgba(15, 20, 30, 0.24);
+    0 0 1px rgba(var(--shadow-rgb), 0.3),
+    0 14px 36px rgba(var(--shadow-rgb), 0.24);
 }
 
 .item {
@@ -425,7 +425,7 @@ onUnmounted(() => {
 
 .item.manage:active {
   cursor: grabbing;
-  background: #e2e5ea;
+  background: var(--bg-track);
 }
 
 .glyph {
@@ -433,18 +433,18 @@ onUnmounted(() => {
 }
 
 .edit:hover {
-  background: #dee3ea;
+  background: var(--hover-rail);
   color: var(--blue);
 }
 
 .del:hover {
-  background: #f2d9d4;
+  background: var(--red-tint-strong);
   color: var(--red);
 }
 
 .sep {
   height: 1px;
-  background: #e6e9ed;
+  background: var(--border-soft);
   margin: 5px 4px;
 }
 

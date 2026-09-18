@@ -406,7 +406,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
 .searchbar {
   flex: none;
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e5ea;
+  border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -458,7 +458,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
 .header {
   padding: 0 16px;
   background: var(--bg-list);
-  border-bottom-color: #e6e9ed;
+  border-bottom-color: var(--border-soft);
 }
 
 .box {
@@ -500,7 +500,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
   background: var(--bg-white);
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  box-shadow: 0 12px 28px rgba(15, 20, 30, 0.16);
+  box-shadow: 0 12px 28px rgba(var(--shadow-rgb), 0.16);
 }
 
 .additem {
@@ -575,7 +575,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
   gap: 8px;
   padding: 48px 32px;
   text-align: left;
-  color: #8c3520;
+  color: var(--red-dark);
   word-break: break-word;
 }
 

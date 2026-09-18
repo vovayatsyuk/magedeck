@@ -11,11 +11,16 @@
   --bg-white: #fff;
   /* The light grey-blue behind chips and menu-row hovers. */
   --bg-tint: #eef1f5;
+  /* The recessed groove behind tabs and the toggle. */
+  --bg-track: #e4e7ec;
+  --bg-bar-top: #f3f4f7;
+  --bg-bar-bottom: #e9ebef;
 
   --border: #cdd1d7;
   --border-soft: #e0e3e8;
   --border-faint: #f0f2f5;
   --divider: #d6d9de;
+  --border-strong: #b8bec6;
 
   --text: #16181c;
   --text-strong: #1c2027;
@@ -24,13 +29,43 @@
   --text-dim: #757a80;
   --text-hint: #9aa1ab;
   --text-faint: #a7adb6;
+  --text-inverse: #fff;
 
   --blue: #2f6bd8;
   --blue-dark: #1f4fa8;
   --blue-tint: #eef4fe;
+  --blue-border: #b6cbf0;
   --green: #3f9a54;
   --green-dark: #2f8a4c;
+  /* The live-connection dot: the platform's green, not the toggle's. */
+  --green-bright: #28c840;
   --red: #cf5540;
+  --red-dark: #8c3520;
+  --red-border: #efc8bd;
+  --red-tint: #fbeae6;
+  --red-tint-strong: #f2d9d4;
+
+  /* Channels only, for rgba() with a per-use alpha. --blue-rgb is --blue. */
+  --blue-rgb: 47, 107, 216;
+  --shadow-rgb: 15, 20, 30;
+  --white-rgb: 255, 255, 255;
+
+  --btn-blue-top: #3b82f6;
+  --btn-blue: #1f6feb;
+  --btn-blue-hover-top: #2f78f0;
+  --btn-blue-hover: #1a63d6;
+  --btn-blue-active-top: #1b60cf;
+  --btn-blue-active: #1553b8;
+  --btn-blue-ring: rgba(18, 70, 155, 0.3);
+  --btn-blue-press: rgba(8, 22, 48, 0.4);
+  --btn-red-top: #ec5f63;
+  --btn-red: #d93c42;
+  --btn-red-hover-top: #e4535a;
+  --btn-red-hover: #c9333a;
+  --btn-red-active-top: #c4343b;
+  --btn-red-active: #ad2b32;
+  --btn-red-ring: rgba(150, 34, 38, 0.3);
+  --btn-red-press: rgba(48, 8, 10, 0.42);
 
   --hover-rail: #dcdee2;
   --hover-icon: #c5cad1;
@@ -104,7 +139,7 @@ input[type='checkbox'] {
 }
 
 input[type='checkbox']:focus-visible {
-  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline: 2px solid rgba(var(--blue-rgb), 0.55);
   outline-offset: 1px;
 }
 
@@ -131,7 +166,7 @@ input[type='checkbox']:indeterminate {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c3c7ce;
+  background: var(--hover-icon);
   border-radius: 6px;
   border: 3px solid transparent;
   background-clip: content-box;
@@ -209,7 +244,7 @@ button.link {
 }
 
 .link:focus-visible {
-  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline: 2px solid rgba(var(--blue-rgb), 0.55);
   outline-offset: 1px;
   border-radius: 3px;
 }
@@ -245,7 +280,7 @@ button.link {
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  color: #7d848e;
+  color: var(--text-dim);
   cursor: default;
 }
 
@@ -268,8 +303,8 @@ button.link {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  color: #fff;
-  background: #b8bec6;
+  color: var(--text-inverse);
+  background: var(--border-strong);
 }
 
 .clear:hover {
@@ -298,7 +333,7 @@ button.link {
   font-size: 12.5px;
   color: var(--text);
   outline: 0;
-  box-shadow: inset 0 1px 2px rgba(15, 20, 30, 0.05);
+  box-shadow: inset 0 1px 2px rgba(var(--shadow-rgb), 0.05);
 }
 
 .field.bad {
@@ -354,7 +389,7 @@ button.link {
   display: flex;
   gap: 2px;
   padding: 2px;
-  background: #e4e7ec;
+  background: var(--bg-track);
   border-radius: 7px;
 }
 
@@ -367,7 +402,7 @@ button.link {
 }
 
 .tab.on {
-  background: #fff;
+  background: var(--bg-white);
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────── */
@@ -392,22 +427,22 @@ button.link {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.005em;
-  color: #1d1d1f;
-  background: linear-gradient(180deg, #fff, #fbfbfc);
-  border: 1px solid #cdcdd2;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--bg-white), var(--bg-list));
+  border: 1px solid var(--border);
   border-radius: 6px;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 
 .btn:hover {
-  background: linear-gradient(180deg, #fafafb, #f2f2f4);
-  border-color: #c6c6cb;
+  background: linear-gradient(180deg, var(--bg-list), var(--bg-panel));
+  border-color: var(--hover-icon);
 }
 
 .btn:active {
-  background: #e8e8ec;
-  border-color: #bdbdc3;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: var(--bg-track);
+  border-color: var(--border-strong);
+  box-shadow: inset 0 1px 2px rgba(var(--shadow-rgb), 0.1);
 }
 
 /* A ring for keyboard focus only: WebKitGTK focuses a button on click too,
@@ -419,52 +454,52 @@ button.link {
 }
 
 .btn:focus-visible {
-  outline: 2px solid rgba(47, 107, 216, 0.55);
+  outline: 2px solid rgba(var(--blue-rgb), 0.55);
   outline-offset: 1px;
 }
 
 /* The filled faces carry no border, so their height comes from the padding
    box alone — the same 30px the bordered one lands on. */
 .btn-primary {
-  color: #fff;
-  background: linear-gradient(180deg, #3b82f6, #1f6feb);
+  color: var(--text-inverse);
+  background: linear-gradient(180deg, var(--btn-blue-top), var(--btn-blue));
   border: none;
   padding: 0 17px;
-  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 0 0 1px var(--btn-blue-ring),
+    inset 0 1px 0 rgba(var(--white-rgb), 0.13);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(180deg, #2f78f0, #1a63d6);
-  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  background: linear-gradient(180deg, var(--btn-blue-hover-top), var(--btn-blue-hover));
+  box-shadow: inset 0 0 0 1px var(--btn-blue-ring),
+    inset 0 1px 0 rgba(var(--white-rgb), 0.13);
 }
 
 .btn-primary:active {
-  background: linear-gradient(180deg, #1b60cf, #1553b8);
-  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.34),
-    inset 0 1px 2px rgba(8, 22, 48, 0.4);
+  background: linear-gradient(180deg, var(--btn-blue-active-top), var(--btn-blue-active));
+  box-shadow: inset 0 0 0 1px var(--btn-blue-ring),
+    inset 0 1px 2px var(--btn-blue-press);
 }
 
 .btn-danger {
-  color: #fff;
-  background: linear-gradient(180deg, #ec5f63, #d93c42);
+  color: var(--text-inverse);
+  background: linear-gradient(180deg, var(--btn-red-top), var(--btn-red));
   border: none;
   padding: 0 17px;
-  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 0 0 1px var(--btn-red-ring),
+    inset 0 1px 0 rgba(var(--white-rgb), 0.13);
 }
 
 .btn-danger:hover {
-  background: linear-gradient(180deg, #e4535a, #c9333a);
-  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  background: linear-gradient(180deg, var(--btn-red-hover-top), var(--btn-red-hover));
+  box-shadow: inset 0 0 0 1px var(--btn-red-ring),
+    inset 0 1px 0 rgba(var(--white-rgb), 0.13);
 }
 
 .btn-danger:active {
-  background: linear-gradient(180deg, #c4343b, #ad2b32);
-  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.34),
-    inset 0 1px 2px rgba(48, 8, 10, 0.42);
+  background: linear-gradient(180deg, var(--btn-red-active-top), var(--btn-red-active));
+  box-shadow: inset 0 0 0 1px var(--btn-red-ring),
+    inset 0 1px 2px var(--btn-red-press);
 }
 
 /* The click is refused in the store; this only has to look unavailable, so
@@ -473,23 +508,23 @@ button.link {
 .btn.off:hover,
 .btn.off:active {
   opacity: 0.4;
-  background: #fff;
-  border-color: #cdcdd2;
+  background: var(--bg-white);
+  border-color: var(--border);
   box-shadow: none;
 }
 
 .btn-primary.off,
 .btn-primary.off:hover,
 .btn-primary.off:active {
-  background: #1f6feb;
-  box-shadow: inset 0 0 0 1px rgba(18, 70, 155, 0.28);
+  background: var(--btn-blue);
+  box-shadow: inset 0 0 0 1px var(--btn-blue-ring);
 }
 
 .btn-danger.off,
 .btn-danger.off:hover,
 .btn-danger.off:active {
-  background: #d93c42;
-  box-shadow: inset 0 0 0 1px rgba(150, 34, 38, 0.28);
+  background: var(--btn-red);
+  box-shadow: inset 0 0 0 1px var(--btn-red-ring);
 }
 
 /* ── Chips ────────────────────────────────────────────────────────── */
@@ -506,7 +541,7 @@ button.link {
   font-family: var(--mono);
   color: var(--text-mid);
   background: var(--bg-tint);
-  border: 1px solid #dcdfe4;
+  border: 1px solid var(--divider);
   border-radius: 4px;
   word-break: break-all;
 }
@@ -555,7 +590,7 @@ button.link {
 }
 .panel-head .actions:hover,
 .row .actions:hover {
-  color: #2b3038;
+  color: var(--text-mid);
 }
 .panel-head:hover .actions,
 .panel-head.editing .actions,
@@ -600,7 +635,7 @@ button.link {
 }
 
 .modrow:hover {
-  background: #f2f5fb;
+  background: var(--blue-tint);
 }
 
 .modname.off {
@@ -645,14 +680,14 @@ button.link {
   width: 28px;
   height: 16px;
   border-radius: 999px;
-  border: 1px solid #cdd1d7;
-  background: #e4e7eb;
+  border: 1px solid var(--border);
+  background: var(--bg-track);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .toggle.on {
   background: var(--green);
-  border-color: #35803f;
+  border-color: var(--green-dark);
 }
 
 .knob {
@@ -662,8 +697,8 @@ button.link {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.25);
+  background: var(--bg-white);
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.25);
   transition: transform 0.15s ease;
 }
 
@@ -683,20 +718,20 @@ button.link {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  border-top-color: #fff;
+  border: 1.5px solid rgba(var(--white-rgb), 0.45);
+  border-top-color: var(--text-inverse);
   animation: mm-spin 0.7s linear infinite;
 }
 
 /* White on the green track, dark on the grey one. */
 .toggle.busy:not(.on) .knob::after {
-  border-color: rgba(43, 48, 56, 0.2);
-  border-top-color: #6b727c;
+  border-color: rgba(var(--shadow-rgb), 0.2);
+  border-top-color: var(--text-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toggle.busy .knob {
-    background: #fff;
+    background: var(--bg-white);
   }
   .toggle.busy .knob::after {
     animation: none;
@@ -744,7 +779,7 @@ button.link {
 .card .name {
   font-size: 11.5px;
   font-weight: 600;
-  color: #2b3038;
+  color: var(--text-mid);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -772,7 +807,7 @@ button.link {
 }
 
 .card .act:hover {
-  background: #eef0f3;
+  background: var(--bg-tint);
 }
 
 .card .act.play:hover {
@@ -831,7 +866,7 @@ button.link {
   width: 7px;
   height: 7px;
   border-radius: 2px;
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 1px rgba(var(--shadow-rgb), 0.1);
 }
 
 .spinner {
@@ -869,7 +904,7 @@ button.link {
   height: 15px;
   border-radius: 50%;
   background: var(--red);
-  color: #fff;
+  color: var(--text-inverse);
   font-size: 10px;
   font-weight: 700;
 }
@@ -888,7 +923,7 @@ button.link {
 
   .spinning::after {
     animation: none;
-    border-color: rgba(47, 107, 216, 0.45);
+    border-color: rgba(var(--blue-rgb), 0.45);
   }
 }
 

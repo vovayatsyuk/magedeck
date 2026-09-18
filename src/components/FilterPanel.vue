@@ -373,7 +373,7 @@ function removeFilter(f) {
 .pencil.on,
 .pencil.on:hover {
   background: var(--blue);
-  color: #fff;
+  color: var(--text-inverse);
 }
 
 .plus {
@@ -431,7 +431,7 @@ function removeFilter(f) {
 .sep {
   height: 1px;
   margin: 7px 6px;
-  background: #dcdfe4;
+  background: var(--divider);
 }
 
 .row {
@@ -442,7 +442,7 @@ function removeFilter(f) {
   padding: 6px 4px 6px 10px;
   border-radius: 6px;
   font-size: 12.5px;
-  color: #2b3038;
+  color: var(--text-mid);
 }
 
 .row:hover {
@@ -455,7 +455,7 @@ function removeFilter(f) {
 
 .row.grab:active {
   cursor: grabbing;
-  background: #d7dbe1;
+  background: var(--hover-rail);
 }
 
 .row.active {

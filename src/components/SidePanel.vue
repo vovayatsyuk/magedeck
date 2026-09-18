@@ -320,7 +320,7 @@ async function restore(s) {
 
 .rule {
   height: 1px;
-  background: #e2e5ea;
+  background: var(--border-soft);
   margin: 0 14px;
 }
 
@@ -362,7 +362,7 @@ async function restore(s) {
      under it without a hard edge cutting a name in half. White with zero
      alpha, not `transparent`, which some engines blend through grey. */
   padding-left: 20px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), var(--bg-white) 16px);
+  background: linear-gradient(90deg, rgba(var(--white-rgb), 0), var(--bg-white) 16px);
 }
 .card:hover .toolbar,
 .toolbar.busy {
@@ -401,7 +401,7 @@ async function restore(s) {
 .cmd {
   font-size: 11px;
   font-family: var(--mono);
-  color: #6b727c;
+  color: var(--text-soft);
   line-height: 1.45;
   word-break: break-all;
   display: -webkit-box;

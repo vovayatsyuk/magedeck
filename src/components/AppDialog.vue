@@ -483,7 +483,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
             class="swatch"
             :style="{
               background: c,
-              outline: (state.form.color || DEFAULT_COLOR) === c ? '2px solid #16181c' : c === '#ffffff' ? '1px solid #c3c7ce' : '2px solid transparent',
+              outline: (state.form.color || DEFAULT_COLOR) === c ? '2px solid var(--text)' : c === '#ffffff' ? '1px solid var(--hover-icon)' : '2px solid transparent',
             }"
             @click="state.form.color = c"
           ></span>
@@ -538,7 +538,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(18, 22, 30, 0.3);
+  background: rgba(var(--shadow-rgb), 0.3);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -548,9 +548,9 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 .dialog {
   margin-top: 96px;
   max-width: calc(100% - 48px);
-  background: #f4f5f7;
+  background: var(--bg-chrome);
   border-radius: 12px;
-  box-shadow: 0 26px 64px rgba(15, 20, 30, 0.38);
+  box-shadow: 0 26px 64px rgba(var(--shadow-rgb), 0.38);
   overflow: hidden;
 }
 
@@ -572,7 +572,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 
 .subtitle {
   font-size: 12px;
-  color: #6b727c;
+  color: var(--text-soft);
   margin-top: 5px;
   line-height: 1.5;
   white-space: pre-line;
@@ -612,8 +612,8 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   max-height: 280px;
   overflow-y: auto;
   scrollbar-width: thin;
-  background: #fff;
-  border: 1px solid #dfe2e7;
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
 }
 
@@ -678,8 +678,8 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   height: 280px;
   overflow-y: auto;
   scrollbar-width: thin;
-  background: #fff;
-  border: 1px solid #dfe2e7;
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
 }
 
@@ -693,7 +693,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 }
 
 .pickrow:hover {
-  background: #f2f5fb;
+  background: var(--blue-tint);
 }
 
 /* A faint plus, and a blue check once the row is picked. */
@@ -736,12 +736,12 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   outline: 0;
   margin: 16px 20px 0;
   padding: 10px 11px;
-  background: #fff;
-  border: 1px solid #dfe2e7;
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
   font-size: 11px;
   font-family: var(--mono);
-  color: #6b727c;
+  color: var(--text-soft);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
@@ -755,12 +755,12 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   gap: 8px;
   margin: 16px 20px 0;
   padding: 9px 11px;
-  border: 1px solid #efc8bd;
+  border: 1px solid var(--red-border);
   border-radius: 8px;
-  background: #fbeae6;
+  background: var(--red-tint);
   font-size: 12px;
   line-height: 1.45;
-  color: #8c3520;
+  color: var(--red-dark);
   word-break: break-word;
 }
 
@@ -774,7 +774,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   gap: 10px;
   margin-top: 18px;
   padding: 12px 20px;
-  border-top: 1px solid #e2e5ea;
+  border-top: 1px solid var(--border-soft);
   background: var(--bg-rail);
 }
 
