@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import MagentoPicker from './MagentoPicker.vue';
 import { state, createSnapshot, deleteSnapshot, restoreSnapshot, snapshotPlan, clearHistory, confirmDelete, applyPlan } from '../store.js';
-import { plural } from '../logic.js';
+import { plural, withDayDividers } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
 function removeSnapshot(s) {
@@ -62,6 +62,23 @@ const shownHistory = computed(() =>
   showAllHistory.value ? state.history : state.history.slice(0, HISTORY_PREVIEW),
 );
 const hiddenHistory = computed(() => state.history.length - shownHistory.value.length);
+
+/** Midnight turns today's rows into yesterday's, with nothing else to prompt
+ *  a render: re-arm a timer for each one. */
+const today = ref(Date.now());
+let midnightTimer;
+function armMidnight() {
+  const d = new Date();
+  const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+  midnightTimer = setTimeout(() => {
+    today.value = Date.now();
+    armMidnight();
+  }, next - d.getTime() + 1000);
+}
+armMidnight();
+onUnmounted(() => clearTimeout(midnightTimer));
+
+const historyRows = computed(() => withDayDividers(shownHistory.value, today.value));
 
 // A new command collapses the list back to the recent slice.
 watch(() => state.history[0]?.id, () => (showAllHistory.value = false));
@@ -198,7 +215,9 @@ async function restore(s) {
           :name="animateHistory ? 'entry' : 'nofx'"
           :class="['cards', { nomove: shownHistory.length > MOVE_LIMIT }]"
         >
-          <div v-for="h in shownHistory" :key="h.id" class="card">
+          <template v-for="h in historyRows" :key="h.divider ? h.key : h.id">
+          <div v-if="h.divider" class="day" :title="h.title">{{ h.label }}</div>
+          <div v-else class="card">
             <div class="toolbar" :class="{ busy: replaying?.id === h.id }">
               <template v-if="replayable(h)">
                 <span v-if="isReplaying(h, 'revert')" class="spinslot"><span class="spinner"></span></span>
@@ -216,6 +235,7 @@ async function restore(s) {
             </div>
             <div class="cmd">{{ h.time }} {{ h.cmd }}</div>
           </div>
+          </template>
         </TransitionGroup>
 
         <div
@@ -357,6 +377,24 @@ async function restore(s) {
 .toolbar .act.done,
 .toolbar .act.done:hover {
   color: var(--green-dark);
+}
+
+/* A day's first row: the label between two hairlines. */
+.day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 -1px;
+  font-size: 10.5px;
+  color: var(--text-hint);
+  cursor: default;
+}
+.day::before,
+.day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
 }
 
 /* Not selectable: ⧉ copies it, and 200 of these as textareas cost ~338ms. */

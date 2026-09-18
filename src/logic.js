@@ -192,3 +192,55 @@ export function keepOnly(byMagento, validIds) {
   for (const id of stale) delete out[id];
   return out;
 }
+
+/** When a history row ran. Rows written before `at` was stored still carry
+ *  it in their id: `h` + `Date.now()` in base 36 (8 digits until 2059) +
+ *  a sequence number. An explicit `at: null` means the time is unknown, as
+ *  for rows older than their ids. Anything that does not decode to a sane
+ *  time is left undated rather than guessed. */
+export function entryTime(h) {
+  if ('at' in h) return Number.isFinite(h.at) ? h.at : null;
+  const ms = /^h[0-9a-z]{9,}$/.test(h.id ?? '') ? parseInt(h.id.slice(1, 9), 36) : NaN;
+  return ms > Date.UTC(2020, 0) && ms < Date.UTC(2100, 0) ? ms : null;
+}
+
+const dayStart = (ms) => {
+  const d = new Date(ms);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+};
+
+/** Calendar days, not 24h spans: 23:59 to 00:01 is a day ago. Rounded, so a
+ *  DST change's 23- or 25-hour day still counts as one. */
+const daysBetween = (from, to) => Math.round((dayStart(to) - dayStart(from)) / 86400000);
+
+/** The divider over a day's rows: nothing for today, then `yesterday`,
+ *  `N days ago` for the rest of the week, then the date itself. `title` is
+ *  always the full date, for hover. */
+export function dayLabel(ms, now = Date.now()) {
+  const date = new Date(ms);
+  const days = daysBetween(ms, now);
+  const title = date.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  if (days <= 0) return null;
+  if (days === 1) return { label: 'yesterday', title };
+  if (days < 7) return { label: `${days} days ago`, title };
+  const sameYear = date.getFullYear() === new Date(now).getFullYear();
+  const label = date.toLocaleDateString([], { day: 'numeric', month: 'long', ...(sameYear ? {} : { year: 'numeric' }) });
+  return { label, title };
+}
+
+/** History rows with a divider before each day's first one. Rows are newest
+ *  first; an undated row stays with the rows above it. */
+export function withDayDividers(history, now = Date.now()) {
+  const out = [];
+  let day = dayStart(now);
+  for (const h of history) {
+    const at = entryTime(h);
+    if (at !== null && dayStart(at) !== day) {
+      day = dayStart(at);
+      const label = dayLabel(at, now);
+      if (label) out.push({ divider: true, key: `d${day}`, ...label });
+    }
+    out.push(h);
+  }
+  return out;
+}

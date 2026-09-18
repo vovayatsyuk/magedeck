@@ -9,6 +9,7 @@ import {
   rangeSelect,
   selectedNames,
   legacyEntry,
+  entryTime,
   dependentsIn,
   plural,
   BUILTIN_FILTERS,
@@ -170,9 +171,10 @@ export async function reloadModules() {
   }
 }
 
-// Legacy rows have `verb` + `names`, or only `cmd`, which may hold one line per verb.
+// Legacy rows have `verb` + `names`, or only `cmd`, which may hold one line per
+// verb. One without an id predates ids too: a fresh one would date it today.
 function migrateEntry(h) {
-  const row = h.id ? { ...h } : { ...h, id: historyId() };
+  const row = h.id ? { ...h, at: entryTime(h) } : { ...h, id: historyId(), at: null };
   if (row.cmd?.includes('\n')) row.cmd = row.cmd.split('\n').join(' && ');
   if (row.enable || row.disable) return row;
   const { verb, names = [] } = row.names ? row : { ...row, ...(legacyEntry(row.cmd) ?? {}) };
@@ -287,6 +289,7 @@ export async function applyPlan(enable, disable, title, { force = false, source 
       disable,
       cmd: result.command,
       time: now(),
+      at: Date.now(),
       dot: enable.length ? GREEN : RED,
     });
     await api.saveHistory(state.magentoId, state.history);

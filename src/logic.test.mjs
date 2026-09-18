@@ -15,6 +15,9 @@ import {
   parseSshTarget,
   snapshotChanges,
   enabledFirst,
+  entryTime,
+  dayLabel,
+  withDayDividers,
 } from './logic.js';
 
 const mod = (name, vendor, on) => ({ name, vendor, on });
@@ -309,4 +312,41 @@ test('inFilter: an empty expression adds nothing, unlike the search box', () => 
   assert.equal(inFilter(MODULES[0], { members: ['Swissup_Breeze'] }), true);
   assert.equal(inFilter(MODULES[1], { members: ['Swissup_Breeze'], query: '  ' }), false);
   assert.equal(inFilter(MODULES[1], {}), false);
+});
+
+const at = (y, m, d, h = 12) => new Date(y, m - 1, d, h).getTime();
+const NOW = at(2026, 9, 18, 10);
+
+test('entryTime: prefers the stored time, else decodes the id', () => {
+  assert.equal(entryTime({ at: 5, id: 'hzzz' }), 5);
+  const ms = at(2026, 9, 16);
+  assert.equal(entryTime({ id: `h${ms.toString(36)}a` }), ms);
+  assert.equal(entryTime({ id: 'x1' }), null);
+  assert.equal(entryTime({ at: null, id: `h${at(2026, 9, 16).toString(36)}a` }), null);
+  assert.equal(entryTime({}), null);
+});
+
+test('dayLabel: today, yesterday, days ago, then the date', () => {
+  assert.equal(dayLabel(at(2026, 9, 18, 1), NOW), null);
+  assert.equal(dayLabel(at(2026, 9, 17, 23), NOW).label, 'yesterday');
+  assert.equal(dayLabel(at(2026, 9, 15), NOW).label, '3 days ago');
+  assert.match(dayLabel(at(2026, 9, 1), NOW).label, /September/);
+  assert.doesNotMatch(dayLabel(at(2026, 9, 1), NOW).label, /2026/);
+  assert.match(dayLabel(at(2025, 9, 1), NOW).label, /2025/);
+  assert.match(dayLabel(at(2026, 9, 15), NOW).title, /2026/);
+});
+
+test('withDayDividers: one divider per earlier day, none for today', () => {
+  const rows = [
+    { id: 'a', at: at(2026, 9, 18, 9) },
+    { id: 'b', at: at(2026, 9, 17, 20) },
+    { id: 'c' },
+    { id: 'd', at: at(2026, 9, 17, 8) },
+    { id: 'e', at: at(2026, 9, 15) },
+  ];
+  const out = withDayDividers(rows, NOW);
+  assert.deepEqual(
+    out.map((r) => (r.divider ? r.label : r.id)),
+    ['a', 'yesterday', 'b', 'c', 'd', '3 days ago', 'e'],
+  );
 });
