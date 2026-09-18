@@ -326,6 +326,7 @@ function removeFilter(f) {
         >
           <div class="grow">
             <div class="name">{{ row.name }}</div>
+            <div class="meta">{{ row.on }} on · {{ row.off }} off</div>
           </div>
           <div class="actions">
             <template v-if="editingPresets">
