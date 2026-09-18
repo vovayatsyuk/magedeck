@@ -362,7 +362,7 @@ async function restore(s) {
      under it without a hard edge cutting a name in half. White with zero
      alpha, not `transparent`, which some engines blend through grey. */
   padding-left: 20px;
-  background: linear-gradient(90deg, rgba(var(--white-rgb), 0), var(--bg-white) 16px);
+  background: linear-gradient(90deg, rgba(var(--bg-white-rgb), 0), var(--bg-white) 16px);
 }
 .card:hover .toolbar,
 .toolbar.busy {

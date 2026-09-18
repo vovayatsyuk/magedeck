@@ -69,6 +69,88 @@
 
   --hover-rail: #dcdee2;
   --hover-icon: #c5cad1;
+
+  --knob: #fff;
+  /* The secondary button's face, at rest, hovered and pressed. */
+  --btn-top: var(--bg-white);
+  --btn-bottom: var(--bg-list);
+  --btn-hover-top: var(--bg-list);
+  --btn-hover-bottom: var(--bg-panel);
+  --btn-press: var(--bg-track);
+  --scrim: rgba(var(--shadow-rgb), 0.3);
+  /* A hairline around dialogs; light mode has enough shadow without it. */
+  --dialog-ring: transparent;
+  /* --bg-white's channels, for fading into it. */
+  --bg-white-rgb: 255, 255, 255;
+
+  color-scheme: light dark;
+}
+
+/* Follows the system; there is no setting. Surfaces invert their order —
+   what sits on top is lighter — and blue, green and red lift so they still
+   read as text on the dark. The filled blue button keeps its light-mode face;
+   the red one goes a shade deeper, which reads calmer on the dark. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-list: #222428;
+    --bg-rail: #191b1e;
+    --bg-panel: #1b1d21;
+    --bg-chrome: #1e2024;
+    --bg-white: #2a2d32;
+    --bg-tint: #33373d;
+    --bg-track: #15171a;
+    --bg-bar-top: #25282c;
+    --bg-bar-bottom: #1f2125;
+
+    --border: #464a51;
+    --border-soft: #36393f;
+    --border-faint: #2c2f34;
+    --divider: #3a3d43;
+    --border-strong: #5a5f67;
+
+    --text: #e6e8eb;
+    --text-strong: #f2f3f5;
+    --text-mid: #c4c8ce;
+    --text-soft: #9aa0a8;
+    --text-dim: #8c9199;
+    --text-hint: #717781;
+    --text-faint: #646a73;
+
+    --blue: #3d8bff;
+    --blue-dark: #7ab0ff;
+    --blue-tint: #272c34;
+    --blue-border: #2f5aa8;
+    --green: #3a9150;
+    --green-dark: #56b56c;
+    --red: #e0664f;
+    --red-dark: #f0a08f;
+    --red-border: #6b3328;
+    --red-tint: #3a2320;
+    --red-tint-strong: #4a2a25;
+
+    --blue-rgb: 61, 139, 255;
+    --shadow-rgb: 0, 0, 0;
+
+    --hover-rail: #2c2f34;
+    --hover-icon: #4a4f57;
+
+    --knob: #e8e9eb;
+    /* Hover darkens only a step: the light-mode step reads as pressed here. */
+    --btn-top: #303338;
+    --btn-bottom: #2a2d32;
+    --btn-hover-top: #2c2f34;
+    --btn-hover-bottom: #272a2e;
+    --btn-press: #222428;
+    --btn-red-top: #d9474c;
+    --btn-red: #c2303a;
+    --btn-red-hover-top: #d03f45;
+    --btn-red-hover: #b52a33;
+    --btn-red-active-top: #b52d35;
+    --btn-red-active: #9c242c;
+    --scrim: rgba(0, 0, 0, 0.6);
+    --dialog-ring: rgba(255, 255, 255, 0.1);
+    --bg-white-rgb: 42, 45, 50;
+  }
 }
 
 /* ── Base ─────────────────────────────────────────────────────────── */
@@ -111,6 +193,12 @@ input:not([type='checkbox']),
 textarea,
 [contenteditable] {
   cursor: text;
+}
+
+/* The engine's own grey is close to the typed text in dark mode. */
+::placeholder {
+  color: var(--text-hint);
+  opacity: 1;
 }
 
 a {
@@ -428,19 +516,19 @@ button.link {
   font-weight: 600;
   letter-spacing: -0.005em;
   color: var(--text);
-  background: linear-gradient(180deg, var(--bg-white), var(--bg-list));
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   border: 1px solid var(--border);
   border-radius: 6px;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 
 .btn:hover {
-  background: linear-gradient(180deg, var(--bg-list), var(--bg-panel));
+  background: linear-gradient(180deg, var(--btn-hover-top), var(--btn-hover-bottom));
   border-color: var(--hover-icon);
 }
 
 .btn:active {
-  background: var(--bg-track);
+  background: var(--btn-press);
   border-color: var(--border-strong);
   box-shadow: inset 0 1px 2px rgba(var(--shadow-rgb), 0.1);
 }
@@ -508,7 +596,7 @@ button.link {
 .btn.off:hover,
 .btn.off:active {
   opacity: 0.4;
-  background: var(--bg-white);
+  background: var(--btn-top);
   border-color: var(--border);
   box-shadow: none;
 }
@@ -697,7 +785,7 @@ button.link {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--bg-white);
+  background: var(--knob);
   box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.25);
   transition: transform 0.15s ease;
 }
@@ -731,7 +819,7 @@ button.link {
 
 @media (prefers-reduced-motion: reduce) {
   .toggle.busy .knob {
-    background: var(--bg-white);
+    background: var(--knob);
   }
   .toggle.busy .knob::after {
     animation: none;

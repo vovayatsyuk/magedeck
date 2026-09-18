@@ -538,7 +538,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(var(--shadow-rgb), 0.3);
+  background: var(--scrim);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -550,7 +550,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
   max-width: calc(100% - 48px);
   background: var(--bg-chrome);
   border-radius: 12px;
-  box-shadow: 0 26px 64px rgba(var(--shadow-rgb), 0.38);
+  box-shadow: 0 0 0 1px var(--dialog-ring), 0 26px 64px rgba(var(--shadow-rgb), 0.38);
   overflow: hidden;
 }
 
