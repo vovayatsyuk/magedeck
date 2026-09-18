@@ -687,6 +687,13 @@ button.link {
   display: flex;
 }
 
+/* A header's pencil while its list is in edit mode. */
+.panel-head .pencil.on,
+.panel-head .pencil.on:hover {
+  background: var(--blue);
+  color: var(--text-inverse);
+}
+
 /* A module's name wherever it is listed. */
 .pickname {
   flex: 1;
@@ -930,6 +937,16 @@ button.link {
   justify-content: center;
   width: 20px;
   height: 20px;
+}
+
+/* In effect already: a preset applied, a snapshot matched. */
+.card .applied {
+  color: var(--green-dark);
+}
+
+.card .applied .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .card.grab {

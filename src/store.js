@@ -379,8 +379,18 @@ async function ensureInitialSnapshot() {
   await persistSnapshots();
 }
 
-export async function createSnapshot() {
-  state.snapshots.unshift(snapshotOf(`Snapshot ${state.snapshots.length + 1}`));
+/** What a snapshot is called when its name is left blank. */
+export const defaultSnapshotName = () => `Snapshot ${state.snapshots.length + 1}`;
+
+export async function createSnapshot(name) {
+  state.snapshots.unshift(snapshotOf(name || defaultSnapshotName()));
+  await persistSnapshots();
+}
+
+export async function renameSnapshot(id, name) {
+  const s = state.snapshots.find((x) => x.id === id);
+  if (!s) return;
+  s.name = name;
   await persistSnapshots();
 }
 
@@ -678,6 +688,8 @@ const REQUIRED = {
   },
   filter: () => ['name'],
   preset: () => ['name'],
+  // A new one may go unnamed and takes the default; a rename may not blank it.
+  snapshot: () => (state.dialog?.mode === 'edit' ? ['name'] : []),
 };
 
 export const requiredFields = computed(() => REQUIRED[state.dialog?.kind]?.(state.form) ?? []);
@@ -731,6 +743,7 @@ const FAILURE_TITLE = {
   delete: 'Could not delete that',
   filter: 'Could not save the filter',
   preset: 'Could not save the preset',
+  snapshot: 'Could not save the snapshot',
   install: 'Could not save the Magento install',
 };
 
@@ -835,6 +848,11 @@ export async function dialogPrimary() {
     }
     if (d.kind === 'preset') {
       await savePreset({ id: d.id, name: f.name.trim(), state: { ...(f.state || {}) } });
+      return;
+    }
+    if (d.kind === 'snapshot') {
+      const name = (f.name || '').trim();
+      await (d.mode === 'edit' ? renameSnapshot(d.id, name) : createSnapshot(name));
       return;
     }
     if (d.kind === 'install') {

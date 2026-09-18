@@ -1,9 +1,18 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue';
 import MagentoPicker from './MagentoPicker.vue';
-import { state, createSnapshot, deleteSnapshot, restoreSnapshot, snapshotPlan, clearHistory, confirmDelete, applyPlan } from '../store.js';
+import { state, openDialog, deleteSnapshot, restoreSnapshot, snapshotPlan, clearHistory, confirmDelete, applyPlan } from '../store.js';
 import { plural, withDayDividers } from '../logic.js';
 import Icon from './icons/Icon.vue';
+
+const newSnapshot = () => openDialog('snapshot', { name: '' }, { mode: 'create' });
+const renameSnapshot = (s) => openDialog('snapshot', { name: s.name }, { mode: 'edit', id: s.id });
+
+// Like presets: the pencil in the header swaps each card's restore for its
+// rename and delete.
+const editingSnapshots = ref(false);
+watch(() => state.snapshots.length, (n) => n || (editingSnapshots.value = false));
+watch(() => state.magentoId, () => (editingSnapshots.value = false));
 
 function removeSnapshot(s) {
   confirmDelete({
@@ -135,7 +144,7 @@ const revert = (h) =>
   );
 
 /** Snapshots that would change something. Restoring the rest is a no-op, so
- *  they show no ▶ at all rather than a button that does nothing. */
+ *  they show a ✓, as a preset in effect does, rather than a ▶ that does nothing. */
 const restorable = computed(
   () =>
     new Set(
@@ -170,9 +179,24 @@ async function restore(s) {
     <template v-if="state.magentoId">
       <div class="rule"></div>
 
-      <div class="panel-head">
+      <div class="panel-head" :class="{ editing: editingSnapshots }">
         <span class="eyebrow grow">Snapshots</span>
-        <span class="link" @click="createSnapshot"><Icon name="plus" />Create</span>
+        <span class="actions">
+          <span
+            v-if="state.snapshots.length"
+            class="glyph pencil"
+            :class="{ on: editingSnapshots }"
+            :title="editingSnapshots ? 'Done editing snapshots' : 'Edit snapshots'"
+            @click="editingSnapshots = !editingSnapshots"
+            ><Icon name="pencil" /></span
+          >
+          <span
+            class="glyph plus"
+            title="New snapshot"
+            @click="newSnapshot"
+            ><Icon name="plus" /></span
+          >
+        </span>
       </div>
 
       <TransitionGroup
@@ -189,15 +213,19 @@ async function restore(s) {
             <div class="meta">{{ s.on }} on · {{ s.off }} off · {{ s.time }}</div>
           </div>
           <div class="actions">
-            <span v-if="restoring === s.id" class="spinslot"><span class="spinner"></span></span>
+            <template v-if="editingSnapshots">
+              <span class="glyph act edit" title="Rename snapshot" @click="renameSnapshot(s)"><Icon name="pencil" /></span>
+              <span class="glyph act del" title="Delete snapshot" @click="removeSnapshot(s)"><Icon name="cross" /></span>
+            </template>
+            <span v-else-if="restoring === s.id" class="spinslot"><span class="spinner"></span></span>
             <span
               v-else-if="restorable.has(s.id)"
-              class="glyph act play"
+              class="glyph act play hover-only"
               title="Restore this snapshot"
               @click="restore(s)"
               ><Icon name="play-filled" /></span
             >
-            <span class="glyph act del" title="Delete snapshot" @click="removeSnapshot(s)"><Icon name="cross" /></span>
+            <span v-else class="spinslot applied" title="Modules match this snapshot"><Icon name="check" /></span>
           </div>
         </div>
       </TransitionGroup>

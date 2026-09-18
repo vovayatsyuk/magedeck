@@ -1,8 +1,8 @@
 <script setup>
 // One dialog for every prompt, switched on `state.dialog.kind`: addModules,
-// apply, alert, confirm, delete, filter, install, preset. The pieces are opt-in per kind.
+// apply, alert, confirm, delete, filter, install, preset, snapshot. The pieces are opt-in per kind.
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect } from 'vue';
-import { state, closeDialog, dialogPrimary, dialogAction, dialogCommand, requiredFields, missingFields, browseFolder, browseKey, hostTyped, pathTyped, addCandidates, addAllTargets, toggleAddPick, openFormAddModules, lockedSet, KEYS } from '../store.js';
+import { state, defaultSnapshotName, closeDialog, dialogPrimary, dialogAction, dialogCommand, requiredFields, missingFields, browseFolder, browseKey, hostTyped, pathTyped, addCandidates, addAllTargets, toggleAddPick, openFormAddModules, lockedSet, KEYS } from '../store.js';
 import { enabledFirst, matches, plural } from '../logic.js';
 import Icon from './icons/Icon.vue';
 
@@ -127,6 +127,17 @@ const view = computed(() => {
       subtitle: 'Applying a preset switches each module below to the state shown. Modules not listed are left alone.',
       fields: [field('name', 'Preset name', 'Debugging off'), field('state', 'Modules', '', { modules: true })],
       primary: dialog.mode === 'edit' ? 'Save preset' : 'Create preset',
+    };
+  }
+
+  if (dialog.kind === 'snapshot') {
+    const edit = dialog.mode === 'edit';
+    return {
+      width: '480px',
+      title: edit ? 'Rename snapshot' : 'New snapshot',
+      subtitle: edit ? '' : 'Remembers which modules are on and off right now.',
+      fields: [field('name', 'Snapshot name', edit ? '' : defaultSnapshotName())],
+      primary: edit ? 'Save snapshot' : 'Create snapshot',
     };
   }
 

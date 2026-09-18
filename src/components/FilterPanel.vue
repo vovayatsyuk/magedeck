@@ -370,12 +370,6 @@ function removeFilter(f) {
   padding-top: 7px;
 }
 
-.pencil.on,
-.pencil.on:hover {
-  background: var(--blue);
-  color: var(--text-inverse);
-}
-
 .plus {
   margin-right: -4px;
 }
@@ -496,15 +490,6 @@ function removeFilter(f) {
 
 .play:hover {
   color: var(--green-dark);
-}
-
-.applied {
-  color: var(--green-dark);
-}
-
-.applied .icon {
-  width: 12px;
-  height: 12px;
 }
 
 .edit:hover {
