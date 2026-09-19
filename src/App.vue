@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { state, init, confirmFromKeyboard, dialogPrimary, closeDialog, reloadModules } from './store.js';
+import { initTray } from './tray.js';
 import FilterPanel from './components/FilterPanel.vue';
 import ModuleList from './components/ModuleList.vue';
 import ChipsBar from './components/ChipsBar.vue';
@@ -59,6 +60,7 @@ function onKeydown(e) {
 
 onMounted(() => {
   init();
+  initTray();
   document.addEventListener('keydown', onKeydown);
 });
 

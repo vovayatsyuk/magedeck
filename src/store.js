@@ -306,6 +306,36 @@ export async function applyPlan(enable, disable, title, { force = false, source 
   }
 }
 
+/** Flushes the cache, and the generated static files first when asked. It
+ *  goes to history, but there is nothing in it to revert or replay. */
+export async function flushCache(staticContent) {
+  if (!state.magentoId || state.running) return false;
+  state.running = true;
+  state.pending = { enable: new Set(), disable: new Set(), source: staticContent ? 'flush:static' : 'flush:cache' };
+  try {
+    const result = await api.magentoFlush(state.magentoId, staticContent);
+    state.history.unshift({
+      id: historyId(),
+      kind: 'flush',
+      title: staticContent ? 'Flushed cache and static content' : 'Flushed cache',
+      enable: [],
+      disable: [],
+      cmd: result.command,
+      time: now(),
+      at: Date.now(),
+    });
+    await api.saveHistory(state.magentoId, state.history);
+    return true;
+  } catch (error) {
+    console.error('magento:flush failed', error);
+    showError(staticContent ? 'Could not flush cache and static content' : 'Could not flush cache', error);
+    return false;
+  } finally {
+    state.running = false;
+    state.pending = null;
+  }
+}
+
 export const apply = (verb, names, title, opts) =>
   verb === 'enable' ? applyPlan(names, [], title, opts) : applyPlan([], names, title, opts);
 

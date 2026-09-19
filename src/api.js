@@ -37,6 +37,14 @@ export const magentoSave = (magento) => invoke('magento_save', { magento });
 export const magentoDelete = (id) => invoke('magento_delete', { id });
 export const magentoReorder = (ids) => invoke('magento_reorder', { ids });
 export const magentoCheck = (magento) => invoke('magento_check', { magento });
+export const magentoFlush = (magentoId, staticContent) =>
+  invoke('magento_flush', { magentoId, staticContent });
+
+/** The tray menu: the current install's title (null when there is none),
+ *  presets as `{ id, name, applied, applying }`, and which flush runs. */
+export const trayMenu = ({ title, presets, flushing }) =>
+  invoke('tray_menu', { title, presets, flushing });
+export const trayShow = () => invoke('tray_show');
 
 // ----------------------------------------------------------------- modules
 

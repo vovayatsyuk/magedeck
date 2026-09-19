@@ -2,6 +2,9 @@ mod magento;
 mod magento_config;
 mod magento_io;
 mod ssh;
+mod tray;
+
+use tauri::{Manager, WindowEvent};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,6 +18,16 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .setup(|app| {
+            tray::create(app.handle())?;
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                tray::hide(window.app_handle());
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             magento::magento_list,
             magento::magento_save,
@@ -24,7 +37,17 @@ pub fn run() {
             magento::module_list,
             magento::module_command,
             magento::module_apply,
+            magento::magento_flush,
+            tray::tray_menu,
+            tray::tray_show,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app, event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = event {
+                tray::show(app);
+            }
+            let _ = (app, event);
+        });
 }

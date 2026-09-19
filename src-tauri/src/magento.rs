@@ -191,6 +191,54 @@ fn apply(
     Ok(RunResult { ok: true, command })
 }
 
+// ------------------------------------------------------------------ cache
+
+/// What `setup:static-content:deploy` would write, and the LESS it compiles
+/// from; `pub/static/.htaccess` stays.
+const STATIC: &[&str] = &[
+    "pub/static/frontend",
+    "pub/static/adminhtml",
+    "pub/static/_cache",
+    "pub/static/deployed_version.txt",
+    "var/view_preprocessed",
+];
+
+/// `rm` where `php` runs: a command that hops into a container takes the
+/// files with it, and the host may not have them, or may not own them.
+fn remove(php: &str, paths: &str) -> String {
+    let hop = match php.trim_end().rsplit_once(char::is_whitespace) {
+        Some((before, last)) if last.rsplit('/').next().unwrap_or(last).starts_with("php") => before,
+        _ => "",
+    };
+    match hop {
+        "" => format!("rm -rf {paths}"),
+        hop => format!("{hop} rm -rf {paths}"),
+    }
+}
+
+fn flush_lines(php: &str, static_content: bool) -> Vec<String> {
+    let mut lines = Vec::new();
+    if static_content {
+        lines.push(remove(php, &STATIC.join(" ")));
+    }
+    lines.push(remove(php, "var/cache var/page_cache"));
+    lines.push(format!("{php} {BIN} cache:flush"));
+    lines
+}
+
+#[tauri::command]
+pub async fn magento_flush(
+    app: AppHandle,
+    magento_id: String,
+    static_content: bool,
+) -> Result<RunResult, String> {
+    let m = find(&app, &magento_id)?;
+    let lines = flush_lines(php(&m), static_content);
+    let command = lines.join(" && ");
+    exec(&m, &lines).map_err(|e| format!("{command}\n\n{e}"))?;
+    Ok(RunResult { ok: true, command })
+}
+
 #[tauri::command]
 pub async fn module_list(app: AppHandle, magento_id: String) -> Result<Vec<Module>, String> {
     modules(&find(&app, &magento_id)?)
@@ -221,7 +269,29 @@ pub async fn module_apply(
 
 #[cfg(test)]
 mod tests {
-    use super::build_command;
+    use super::{build_command, flush_lines};
+
+    #[test]
+    fn static_content_goes_before_the_cache() {
+        assert_eq!(
+            flush_lines("php", false),
+            ["rm -rf var/cache var/page_cache", "php bin/magento cache:flush"]
+        );
+        let lines = flush_lines("php", true);
+        assert!(lines[0].starts_with("rm -rf pub/static/frontend "));
+        assert_eq!(lines[2], "php bin/magento cache:flush");
+    }
+
+    #[test]
+    fn the_files_are_removed_wherever_php_runs() {
+        let first = |php| flush_lines(php, true).remove(0);
+        assert!(first("docker compose exec -T phpfpm php")
+            .starts_with("docker compose exec -T phpfpm rm -rf pub/static/frontend "));
+        // A versioned binary in the container is still php.
+        assert!(first("docker compose exec -T phpfpm php8.3")
+            .starts_with("docker compose exec -T phpfpm rm -rf "));
+        assert!(first("/usr/local/bin/php").starts_with("rm -rf pub/static/frontend "));
+    }
 
     #[test]
     fn rejects_an_unknown_verb() {
