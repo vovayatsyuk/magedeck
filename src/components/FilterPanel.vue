@@ -144,11 +144,19 @@ const presetRows = computed(() =>
   state.presets.map((p) => {
     const states = Object.values(p.state || {});
     const on = states.filter((v) => v === 1).length;
-    const { enable, disable } = presetPlan(p);
+    const { enable, disable, missing } = presetPlan(p);
     const changes = [enable.length && `enables ${plural(enable.length)}`, disable.length && `disables ${plural(disable.length)}`]
       .filter(Boolean)
       .join(', ');
-    return { key: p.id, name: p.name, preset: p, on, off: states.length - on, changes };
+    const absent = missing.length
+      ? `${plural(missing.length)} it turns on ${missing.length === 1 ? 'is' : 'are'} not installed here`
+      : '';
+    // Runnable while anything is missing, even with nothing to switch: the tick
+    // would be a lie, and the modules may be installed by the time it is clicked.
+    const title = changes
+      ? `Apply preset: ${changes}${absent ? ` · ${absent}` : ''}`
+      : `Nothing to switch · ${absent}`;
+    return { key: p.id, name: p.name, preset: p, on, off: states.length - on, changes, absent, title, missing: missing.length };
   }),
 );
 
@@ -326,7 +334,9 @@ function removeFilter(f) {
         >
           <div class="grow">
             <div class="name">{{ row.name }}</div>
-            <div class="meta">{{ row.on }} on · {{ row.off }} off</div>
+            <div class="meta">
+              {{ row.on }} on · {{ row.off }} off<span v-if="row.missing" class="gone" :title="row.absent"> · {{ row.missing }} not installed</span>
+            </div>
           </div>
           <div class="actions">
             <template v-if="editingPresets">
@@ -335,9 +345,10 @@ function removeFilter(f) {
             </template>
             <span v-else-if="running(row.key)" class="spinslot"><span class="spinner"></span></span>
             <span
-              v-else-if="row.changes"
+              v-else-if="row.changes || row.missing"
               class="glyph act play hover-only"
-              :title="`Apply preset: ${row.changes}`"
+              :class="{ idle: !row.changes }"
+              :title="row.title"
               @click.stop="applyPreset(row.preset)"
               ><Icon name="play-filled" /></span
             >

@@ -3,7 +3,8 @@ import { listen } from '@tauri-apps/api/event';
 import * as api from './api.js';
 import { state, magento, presetPlan, applyPreset, flushCache } from './store.js';
 
-// Checked like the card's tick: holds modules, and applying changes nothing.
+// Checked like the card's tick: holds modules, applying changes nothing, and
+// every module it turns on is installed here.
 // While one is being applied it is the only one ticked, until the modules
 // catch up — or a failure clears `pending` and they say so themselves.
 const menu = computed(() => {
@@ -11,10 +12,10 @@ const menu = computed(() => {
   return {
     title: magento.value?.title ?? null,
     presets: state.presets.map((p) => {
-      const { enable, disable } = presetPlan(p);
+      const { enable, disable, missing } = presetPlan(p);
       const applied = running
         ? p.id === running
-        : Object.keys(p.state || {}).length > 0 && !enable.length && !disable.length;
+        : Object.keys(p.state || {}).length > 0 && !enable.length && !disable.length && !missing.length;
       return { id: p.id, name: p.name, applied, applying: p.id === running };
     }),
     flushing: state.pending?.source?.startsWith('flush:') ? state.pending.source.slice(6) : null,

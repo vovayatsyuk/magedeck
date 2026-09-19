@@ -282,16 +282,30 @@ test('snapshotChanges: only the modules that differ, by direction', () => {
     // Swissup_Amp is already on, so it is in neither list.
     enable: ['Swissup_BreezeThemeEditor'],
     disable: ['Swissup_Breeze'],
+    missing: [],
   });
+});
+
+test('snapshotChanges: a module it wants on, but which is not installed, is missing', () => {
+  const snapshot = { state: { ...Object.fromEntries(MODULES.map((m) => [m.name, m.on ? 1 : 0])), Swissup_Gone: 1 } };
+  const { enable, disable, missing } = snapshotChanges(MODULES, snapshot);
+  // Nothing to run, yet the state it describes is not the one this install is in.
+  assert.deepEqual({ enable, disable }, { enable: [], disable: [] });
+  assert.deepEqual(missing, ['Swissup_Gone']);
+});
+
+test('snapshotChanges: a module it wants off and which is not installed is already off', () => {
+  const snapshot = { state: { Swissup_Gone: 0 } };
+  assert.deepEqual(snapshotChanges(MODULES, snapshot), { enable: [], disable: [], missing: [] });
 });
 
 test('snapshotChanges: nothing to do when the state already matches', () => {
   const snapshot = { state: Object.fromEntries(MODULES.map((m) => [m.name, m.on ? 1 : 0])) };
-  assert.deepEqual(snapshotChanges(MODULES, snapshot), { enable: [], disable: [] });
+  assert.deepEqual(snapshotChanges(MODULES, snapshot), { enable: [], disable: [], missing: [] });
 });
 
 test('snapshotChanges: a module the snapshot never saw is left alone', () => {
-  assert.deepEqual(snapshotChanges(MODULES, { state: {} }), { enable: [], disable: [] });
+  assert.deepEqual(snapshotChanges(MODULES, { state: {} }), { enable: [], disable: [], missing: [] });
 });
 
 test('inFilter: the listed modules are in whatever the expression says', () => {

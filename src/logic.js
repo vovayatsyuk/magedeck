@@ -171,10 +171,17 @@ export function parseSshTarget(text) {
   return parsed.length && !(parsed.length === 1 && out.host === String(text).trim()) ? out : null;
 }
 
+/** What applying `snapshot` here would change, plus the modules it wants on
+ *  that this install does not have. A module it wants off is off already when
+ *  it is not installed, but one it wants on can never be, so a snapshot or
+ *  preset missing any of those is not in effect however little there is to do. */
 export function snapshotChanges(modules, snapshot) {
+  const wanted = snapshot.state || {};
+  const installed = new Set(modules.map((m) => m.name));
   return {
-    enable: modules.filter((m) => !m.on && snapshot.state[m.name] === 1).map((m) => m.name),
-    disable: modules.filter((m) => m.on && snapshot.state[m.name] === 0).map((m) => m.name),
+    enable: modules.filter((m) => !m.on && wanted[m.name] === 1).map((m) => m.name),
+    disable: modules.filter((m) => m.on && wanted[m.name] === 0).map((m) => m.name),
+    missing: Object.keys(wanted).filter((n) => wanted[n] === 1 && !installed.has(n)),
   };
 }
 

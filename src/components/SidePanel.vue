@@ -143,19 +143,33 @@ const revert = (h) =>
     applyPlan(h.disable, h.enable, `Reverted ${plural(h.enable.length + h.disable.length)}`),
   );
 
-/** Snapshots that would change something. Restoring the rest is a no-op, so
- *  they show a ✓, as a preset in effect does, rather than a ▶ that does nothing. */
-const restorable = computed(
+/** Per snapshot: whether restoring it would change anything, and how many of
+ *  the modules it had on are gone from this install. One that would change
+ *  nothing shows a ✓, as a preset in effect does, rather than a ▶ — unless a
+ *  module it had on is missing, since the modules then do not match it. It
+ *  stays restorable even so: a restore may still have something to switch,
+ *  and the missing ones may be installed again by the time it is clicked. */
+const plans = computed(
   () =>
-    new Set(
-      state.snapshots
-        .filter((s) => {
-          const { enable, disable } = snapshotPlan(s);
-          return enable.length || disable.length;
-        })
-        .map((s) => s.id),
+    new Map(
+      state.snapshots.map((s) => {
+        const { enable, disable, missing } = snapshotPlan(s);
+        const changes = enable.length + disable.length;
+        return [
+          s.id,
+          {
+            changes,
+            missing: missing.length,
+            title: changes
+              ? 'Restore this snapshot'
+              : `Nothing to switch · ${plural(missing.length)} it had on ${missing.length === 1 ? 'is' : 'are'} not installed here`,
+          },
+        ];
+      }),
     ),
 );
+
+const planOf = (s) => plans.value.get(s.id) ?? { changes: 0, missing: 0, title: '' };
 
 /** A restore takes as long as any other command, and the eye is on the row
  *  that was clicked, not on the pill in the corner. */
@@ -210,7 +224,9 @@ async function restore(s) {
         <div v-for="s in state.snapshots" :key="s.id" class="card card-row">
           <div class="grow">
             <div class="name">{{ s.name }}</div>
-            <div class="meta">{{ s.on }} on · {{ s.off }} off · {{ s.time }}</div>
+            <div class="meta">
+              {{ s.on }} on · {{ s.off }} off<span v-if="planOf(s).missing" class="gone"> · {{ planOf(s).missing }} not installed</span> · {{ s.time }}
+            </div>
           </div>
           <div class="actions">
             <template v-if="editingSnapshots">
@@ -219,9 +235,10 @@ async function restore(s) {
             </template>
             <span v-else-if="restoring === s.id" class="spinslot"><span class="spinner"></span></span>
             <span
-              v-else-if="restorable.has(s.id)"
+              v-else-if="planOf(s).changes || planOf(s).missing"
               class="glyph act play hover-only"
-              title="Restore this snapshot"
+              :class="{ idle: !planOf(s).changes }"
+              :title="planOf(s).title"
               @click="restore(s)"
               ><Icon name="play-filled" /></span
             >

@@ -939,6 +939,21 @@ button.link {
   height: 20px;
 }
 
+/* Runnable, but with nothing to switch: the modules it wants on are missing.
+   Dimmed, so a card that can act still reads louder than one that cannot. */
+.card .act.idle {
+  color: var(--text-hint);
+}
+
+.card .act.play.idle:hover {
+  color: var(--text-soft);
+}
+
+/* Modules the card wants on that this install does not have. */
+.card .meta .gone {
+  color: var(--red-dark);
+}
+
 /* In effect already: a preset applied, a snapshot matched. */
 .card .applied {
   color: var(--green-dark);
