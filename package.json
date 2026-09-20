@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "node --test src/logic.test.mjs"
+    "test": "node --test src/logic.test.mjs",
+    "preversion": "npm test",
+    "version": "node scripts/sync-version.mjs && git add src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

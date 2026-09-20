@@ -3,20 +3,62 @@ name: 'publish'
 on:
   workflow_dispatch:
   push:
-    branches:
-      - release
+    tags:
+      - 'v*'
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: tag must match the app version
+        run: |
+          if [ "${{ github.ref_type }}" != "tag" ]; then
+            echo "::error::Run this from a tag, not from '${{ github.ref_name }}'. Push a tag (git tag v0.1.0 && git push origin v0.1.0), or pick a tag in the Run workflow dropdown."
+            exit 1
+          fi
+          tag='${{ github.ref_name }}'
+          version=$(jq -r .version src-tauri/tauri.conf.json)
+          if [ "$tag" != "v$version" ]; then
+            echo "::error::Tag $tag does not match tauri.conf.json version $version. Run 'npm version' to bump, or retag v$version, so the release and the bundle filenames agree."
+            exit 1
+          fi
+          # npm version keeps these in step; a mismatch means one was hand-edited.
+          pkg=$(jq -r .version package.json)
+          cargo=$(sed -n 's/^version = "\(.*\)"$/\1/p' src-tauri/Cargo.toml | head -1)
+          for pair in "package.json:$pkg" "Cargo.toml:$cargo"; do
+            if [ "${pair#*:}" != "$version" ]; then
+              echo "::error::${pair%%:*} is at ${pair#*:} but tauri.conf.json is at $version. Run 'npm version' rather than editing versions by hand."
+              exit 1
+            fi
+          done
+          echo "$tag matches package.json, tauri.conf.json and Cargo.toml at $version"
+
+      - name: setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm test
+
   publish-tauri:
+    needs: verify
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+          - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
+          - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
@@ -39,23 +81,20 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: lts/*
-          cache: 'npm' # Set this to npm, yarn or pnpm.
+          cache: 'npm'
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          # This matches tauri's default project layout. Change this if you have a different layout.
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-        run: npm install # change this to npm, yarn or pnpm depending on which one you use.
+        run: npm ci
 
       - uses: tauri-apps/tauri-action@v1
         env:
