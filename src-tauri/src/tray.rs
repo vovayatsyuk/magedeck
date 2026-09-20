@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::sync::Mutex;
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
@@ -11,6 +12,12 @@ const QUIT: &str = "quit";
 const PRESET: &str = "preset:";
 const FLUSH_CACHE: &str = "flush:cache";
 const FLUSH_STATIC: &str = "flush:static";
+const FLUSHES: [(&str, &str); 2] = [
+    (FLUSH_CACHE, "Flush cache"),
+    (FLUSH_STATIC, "Flush cache and static content"),
+];
+/// Stands in for the install's title until there is one.
+const NAME: &str = "MageDeck";
 
 #[derive(Deserialize)]
 pub struct Preset {
@@ -58,50 +65,108 @@ pub fn hide<R: Runtime>(app: &AppHandle<R>) {
     in_dock(app, false);
 }
 
+/// The items whose label or tick changes, in menu order, kept so an update
+/// writes to the menu the tray already has: `set_menu` hands it another one,
+/// which a menu open on screen goes on ignoring until it is reopened.
+struct Items<R: Runtime> {
+    title: MenuItem<R>,
+    /// With each preset's id, to tell a relabelling from a different set.
+    presets: Vec<(String, CheckMenuItem<R>)>,
+    /// Empty without an install to run them in.
+    flushes: Vec<MenuItem<R>>,
+}
+
+impl<R: Runtime> Items<R> {
+    /// True while the menu holds these presets, in this order, and its flushes
+    /// belong there: then labels and ticks are all that is left to write.
+    fn fit(&self, title: Option<&str>, presets: &[Preset]) -> bool {
+        self.flushes.is_empty() == title.is_none()
+            && self.presets.len() == presets.len()
+            && self.presets.iter().zip(presets).all(|((id, _), p)| *id == p.id)
+    }
+
+    fn update(
+        &self,
+        title: Option<&str>,
+        presets: &[Preset],
+        flushing: Option<&str>,
+    ) -> tauri::Result<()> {
+        self.title.set_text(title.unwrap_or(NAME))?;
+        for ((_, item), p) in self.presets.iter().zip(presets) {
+            item.set_text(preset_label(p))?;
+            item.set_checked(p.applied)?;
+        }
+        for ((id, label), item) in FLUSHES.iter().zip(&self.flushes) {
+            item.set_text(flush_label(id, label, flushing))?;
+        }
+        Ok(())
+    }
+}
+
+/// The items of the menu the tray icon is carrying.
+struct Live<R: Runtime>(Mutex<Items<R>>);
+
+fn preset_label(p: &Preset) -> String {
+    if p.applying {
+        format!("{} (applying…)", p.name)
+    } else {
+        p.name.clone()
+    }
+}
+
+fn flush_label(id: &str, label: &str, flushing: Option<&str>) -> String {
+    if flushing == id.strip_prefix("flush:") {
+        format!("{label} (flushing…)")
+    } else {
+        label.to_string()
+    }
+}
+
 fn menu<R: Runtime>(
     app: &AppHandle<R>,
     title: Option<&str>,
     presets: &[Preset],
     flushing: Option<&str>,
-) -> tauri::Result<Menu<R>> {
+) -> tauri::Result<(Menu<R>, Items<R>)> {
+    let title_item = MenuItem::with_id(app, SHOW, title.unwrap_or(NAME), true, None::<&str>)?;
     let mut items: Vec<Box<dyn IsMenuItem<R>>> = vec![
-        Box::new(MenuItem::with_id(app, SHOW, title.unwrap_or("MageDeck"), true, None::<&str>)?),
+        Box::new(title_item.clone()),
         Box::new(PredefinedMenuItem::separator(app)?),
     ];
+    let mut presets_items = Vec::new();
     if !presets.is_empty() {
         for p in presets {
             let id = format!("{PRESET}{}", p.id);
-            let label = if p.applying { format!("{} (applying…)", p.name) } else { p.name.clone() };
-            items.push(Box::new(CheckMenuItem::with_id(
-                app, id, label, true, p.applied, None::<&str>,
-            )?));
+            let item =
+                CheckMenuItem::with_id(app, id, preset_label(p), true, p.applied, None::<&str>)?;
+            items.push(Box::new(item.clone()));
+            presets_items.push((p.id.clone(), item));
         }
         items.push(Box::new(PredefinedMenuItem::separator(app)?));
     }
+    let mut flushes = Vec::new();
     // Only with an install to run them in.
     if title.is_some() {
-        for (id, label) in [
-            (FLUSH_CACHE, "Flush cache"),
-            (FLUSH_STATIC, "Flush cache and static content"),
-        ] {
-            let label = if flushing == id.strip_prefix("flush:") {
-                format!("{label} (flushing…)")
-            } else {
-                label.to_string()
-            };
-            items.push(Box::new(MenuItem::with_id(app, id, label, true, None::<&str>)?));
+        for (id, label) in FLUSHES {
+            let label = flush_label(id, label, flushing);
+            let item = MenuItem::with_id(app, id, label, true, None::<&str>)?;
+            items.push(Box::new(item.clone()));
+            flushes.push(item);
         }
         items.push(Box::new(PredefinedMenuItem::separator(app)?));
     }
     items.push(Box::new(MenuItem::with_id(app, QUIT, "Quit", true, Some("CmdOrCtrl+Q"))?));
     let refs: Vec<&dyn IsMenuItem<R>> = items.iter().map(|i| i.as_ref()).collect();
-    Menu::with_items(app, &refs)
+    let menu = Menu::with_items(app, &refs)?;
+    Ok((menu, Items { title: title_item, presets: presets_items, flushes }))
 }
 
 pub fn create<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
+    let (menu, items) = menu(app, None, &[], None)?;
+    app.manage(Live(Mutex::new(items)));
     let builder = TrayIconBuilder::with_id(ID)
-        .tooltip("MageDeck")
-        .menu(&menu(app, None, &[], None)?)
+        .tooltip(NAME)
+        .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
             SHOW => show(app),
@@ -135,10 +200,18 @@ pub fn tray_menu<R: Runtime>(
     // "cache" or "static" while one of those runs.
     flushing: Option<String>,
 ) -> Result<(), String> {
+    let (title, flushing) = (title.as_deref(), flushing.as_deref());
+    let live = app.state::<Live<R>>();
+    let mut live = live.0.lock().map_err(|e| e.to_string())?;
+    // Only a different set of items needs a menu of its own.
+    if live.fit(title, &presets) {
+        return live.update(title, &presets, flushing).map_err(|e| e.to_string());
+    }
     let tray = app.tray_by_id(ID).ok_or("The tray icon is missing.")?;
-    let menu = menu(&app, title.as_deref(), &presets, flushing.as_deref())
-        .map_err(|e| e.to_string())?;
-    tray.set_menu(Some(menu)).map_err(|e| e.to_string())
+    let (menu, items) = menu(&app, title, &presets, flushing).map_err(|e| e.to_string())?;
+    tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+    *live = items;
+    Ok(())
 }
 
 #[tauri::command]
