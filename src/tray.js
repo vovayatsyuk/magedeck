@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue';
 import { listen } from '@tauri-apps/api/event';
 import * as api from './api.js';
-import { state, magento, presetPlan, applyPreset, flushCache } from './store.js';
+import { state, magento, presetPlan, applyPreset, flushCache, reloadModules } from './store.js';
 
 // Checked like the card's tick: holds modules, applying changes nothing, and
 // every module it turns on is installed here.
@@ -26,9 +26,19 @@ const send = () => api.trayMenu(menu.value).catch(console.error);
 
 export function initTray() {
   watch(menu, send, { immediate: true });
+  // config.php is only re-read on a switch, an apply and ⌘R, so a module
+  // disabled from a terminal leaves the ticks lying until one of those. The
+  // window coming back is the moment to catch up.
+  listen('tray-shown', () => reloadModules());
   listen('tray-preset', async ({ payload: id }) => {
     const preset = state.presets.find((p) => p.id === id);
-    if (preset) await applyPreset(preset);
+    // The plan is only worth as much as the list it is computed from, and a
+    // stale one can come out empty: the click would then do nothing at all,
+    // with no list on screen to show why.
+    if (preset) {
+      await reloadModules();
+      await applyPreset(preset);
+    }
     // The click flips the tick itself, even when nothing was applied.
     send();
     // A failure opens its alert in the window, which may be in the tray.

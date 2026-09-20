@@ -55,6 +55,9 @@ pub fn show<R: Runtime>(app: &AppHandle<R>) {
         let _ = w.unminimize();
         let _ = w.set_focus();
     }
+    // The install may have been changed from a terminal while the window was
+    // away, so the modules are re-read as it comes back.
+    let _ = app.emit("tray-shown", ());
 }
 
 pub fn hide<R: Runtime>(app: &AppHandle<R>) {
