@@ -139,8 +139,15 @@ const filterChip = computed(() => {
   return { name: filterName.value, dot: saved ? saved.color : BUILTIN_DOTS[state.filter], locked: state.filter === 'Locked' };
 });
 
-/** Backspace before the first character takes the chip, as in a token field. */
+/** Backspace before the first character takes the chip, as in a token field;
+ *  escape empties the field before anything else gets to act on it. */
 function onSearchKeydown(e) {
+  if (e.key === 'Escape' && state.query) {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuery('');
+    return;
+  }
   if (e.key !== 'Backspace' || !filterChip.value) return;
   const el = e.target;
   if (el.selectionStart !== 0 || el.selectionEnd !== 0) return;
