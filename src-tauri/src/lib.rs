@@ -5,6 +5,7 @@ mod ssh;
 mod tray;
 
 use tauri::{Manager, WindowEvent};
+use tauri_plugin_window_state::StateFlags;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,6 +22,17 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                // Not VISIBLE: closing to tray would otherwise restore a hidden window.
+                .with_state_flags(
+                    StateFlags::SIZE
+                        | StateFlags::POSITION
+                        | StateFlags::MAXIMIZED
+                        | StateFlags::FULLSCREEN,
+                )
+                .build(),
+        )
         .setup(|app| {
             tray::create(app.handle())?;
             Ok(())
