@@ -26,6 +26,7 @@ tauri-plugin-store = "2.4.4"
 tauri-plugin-dialog = "2.7.3"
 tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2.4.1"
+fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs", rev = "c4c45d503ea115a839aae718d02f79e7c7f0f673" }
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
