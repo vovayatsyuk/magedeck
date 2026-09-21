@@ -46,14 +46,42 @@ fn in_dock<R: Runtime>(app: &AppHandle<R>, yes: bool) {
     let _ = app.set_activation_policy(if yes { Regular } else { Accessory });
 }
 
+/// Asks GNOME to raise the window, carrying a timestamp read from the X
+/// server. A window coming out of the tray has nothing newer to offer than the
+/// last input the app itself saw, which is older than the click on the tray —
+/// that one went to GNOME's own shell — and GNOME answers a request it reads
+/// as stale by leaving the window where it is and posting "MageDeck is ready"
+/// instead. The server's clock is never behind.
+#[cfg(target_os = "linux")]
+fn present<R: Runtime>(w: &tauri::WebviewWindow<R>) {
+    use gtk::glib::object::Cast;
+    use gtk::prelude::{GtkWindowExt, WidgetExt};
+    let Ok(win) = w.gtk_window() else {
+        return;
+    };
+    match win.window().and_then(|g| g.downcast::<gdkx11::X11Window>().ok()) {
+        Some(x11) => win.present_with_time(gdkx11::functions::x11_get_server_time(&x11)),
+        None => win.present(),
+    }
+}
+
 pub fn show<R: Runtime>(app: &AppHandle<R>) {
     // First, or the window comes up without focus.
     #[cfg(target_os = "macos")]
     in_dock(app, true);
     if let Some(w) = app.get_webview_window("main") {
-        let _ = w.show();
-        let _ = w.unminimize();
-        let _ = w.set_focus();
+        // A second launch hands over on a D-Bus thread of its own, and GTK is
+        // only ever touched from the thread it runs on.
+        let _ = w.clone().run_on_main_thread(move || {
+            let _ = w.show();
+            let _ = w.unminimize();
+            let _ = w.set_focus();
+            // The show above is only queued, and neither tao's focus request
+            // nor GNOME will do anything for a window that is not up yet. An
+            // idle runs behind that queue, so by then it is.
+            #[cfg(target_os = "linux")]
+            gtk::glib::idle_add_local_once(move || present(&w));
+        });
     }
     // The install may have been changed from a terminal while the window was
     // away, so the modules are re-read as it comes back.
