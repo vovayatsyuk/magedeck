@@ -344,7 +344,8 @@ test('dayLabel: today, yesterday, days ago, then the date', () => {
   assert.equal(dayLabel(at(2026, 9, 18, 1), NOW), null);
   assert.equal(dayLabel(at(2026, 9, 17, 23), NOW).label, 'yesterday');
   assert.equal(dayLabel(at(2026, 9, 15), NOW).label, '3 days ago');
-  assert.match(dayLabel(at(2026, 9, 1), NOW).label, /September/);
+  const september = new Date(at(2026, 9, 1)).toLocaleDateString([], { month: 'long' });
+  assert.ok(dayLabel(at(2026, 9, 1), NOW).label.includes(september.slice(0, 4)));
   assert.doesNotMatch(dayLabel(at(2026, 9, 1), NOW).label, /2026/);
   assert.match(dayLabel(at(2025, 9, 1), NOW).label, /2025/);
   assert.match(dayLabel(at(2026, 9, 15), NOW).title, /2026/);
