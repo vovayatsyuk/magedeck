@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { state, init, confirmFromKeyboard, dialogPrimary, closeDialog, reloadModules } from './store.js';
+import { state, init, confirmFromKeyboard, dialogPrimary, closeDialog, reloadModules, mac } from './store.js';
 import { initTray } from './tray.js';
 import FilterPanel from './components/FilterPanel.vue';
 import ModuleList from './components/ModuleList.vue';
@@ -13,8 +13,13 @@ const list = ref(null);
 /** Text fields only: a checkbox has no selectionStart. */
 const isTextField = (el) => !!el && typeof el.selectionStart === 'number' && !el.readOnly;
 
+/** The modifier the shortcuts here are spelled with. */
+const HINT_KEY = mac ? 'Meta' : 'Control';
+
 function onKeydown(e) {
   const open = !!state.dialog;
+
+  if (e.key === HINT_KEY) state.keyHint = true;
 
   // This WebView keeps an editor undo stack for form fields but binds no
   // keys to it. execCommand fires input events, so v-model keeps up.
@@ -58,17 +63,30 @@ function onKeydown(e) {
   }
 }
 
+// Also on blur: a shortcut that switches windows never delivers its keyup.
+const dropHint = (e) => {
+  if (e.type === 'blur' || e.key === HINT_KEY) state.keyHint = false;
+};
+
 onMounted(() => {
   init();
   initTray();
   document.addEventListener('keydown', onKeydown);
+  document.addEventListener('keyup', dropHint);
+  window.addEventListener('blur', dropHint);
 });
 
-onUnmounted(() => document.removeEventListener('keydown', onKeydown));
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown);
+  document.removeEventListener('keyup', dropHint);
+  window.removeEventListener('blur', dropHint);
+});
 </script>
 
 <template>
-  <div class="window">
+  <!-- Key badges belong to whatever has the keyboard: the dialog takes them
+       over while it is open. -->
+  <div class="window" :class="{ keyhint: state.keyHint && !state.dialog }">
     <div class="body">
       <FilterPanel />
       <div class="center">

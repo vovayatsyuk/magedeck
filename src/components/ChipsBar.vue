@@ -1,7 +1,10 @@
 <script setup>
 import { computed, ref, watchEffect, onMounted, onUnmounted } from 'vue';
-import { selected, deselect, clearSelection, applyFromButton } from '../store.js';
+import { selected, deselect, clearSelection, applyFromButton, keyboardVerb, KEYS } from '../store.js';
 import Icon from './icons/Icon.vue';
+
+/** ⌘↩ runs the inferred verb, shift flips it; label each button with its own. */
+const keyFor = (verb) => (verb === keyboardVerb.value ? KEYS.confirmKey : KEYS.confirmAltKey);
 
 const chipsEl = ref(null);
 const hovered = ref(false);
@@ -55,8 +58,8 @@ onUnmounted(() => observer?.disconnect());
       >
     </div>
 
-    <button type="button" class="btn" @click="applyFromButton('enable')">Enable</button>
-    <button type="button" class="btn btn-primary" @click="applyFromButton('disable')">Disable</button>
+    <button type="button" class="btn" :data-key="keyFor('enable')" @click="applyFromButton('enable')">Enable</button>
+    <button type="button" class="btn btn-primary" :data-key="keyFor('disable')" @click="applyFromButton('disable')">Disable</button>
   </div>
 </template>
 

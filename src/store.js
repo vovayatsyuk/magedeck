@@ -19,10 +19,12 @@ import {
 } from './logic.js';
 
 /** Mac spells its modifiers with symbols; nothing else does. */
-const mac = /Mac/.test(navigator.platform || navigator.userAgent);
+export const mac = /Mac/.test(navigator.platform || navigator.userAgent);
 export const KEYS = mac
-  ? { search: '⌘K', confirm: '⌘↩', reload: '⌘R', alt: '⌥' }
-  : { search: 'Ctrl+K', confirm: 'Ctrl+Enter', reload: 'Ctrl+R', alt: 'Alt' };
+  ? { search: '⌘K', confirm: '⌘↩', confirmKey: '⌘↩', confirmAltKey: '⌘⇧↩', cancel: 'esc', reload: '⌘R', alt: '⌥' }
+  // Button badges are spelled in symbols even off a Mac: they sit inside a
+  // button sized for its label, and "Ctrl+Enter" does not fit there.
+  : { search: 'Ctrl+K', confirm: 'Ctrl+Enter', confirmKey: '⌃↩', confirmAltKey: '⌃⇧↩', cancel: 'esc', reload: 'Ctrl+R', alt: 'Alt' };
 
 const GREEN = '#3f9a54';
 const RED = '#d0563e';
@@ -57,6 +59,8 @@ export const state = reactive({
   modulesError: '',
   formError: '',
   checking: false,
+  // Modifier held: buttons swap their label for the keys that press them.
+  keyHint: false,
 });
 
 let seq = 0;
@@ -354,6 +358,9 @@ const bulkPool = () =>
     state.filter,
     selected.value.length ? state.modules.filter((m) => state.checked[m.name]) : visible.value,
   );
+
+/** The verb the unshifted ⌘↩ would run, so buttons can label themselves. */
+export const keyboardVerb = computed(() => inferVerb(bulkPool()));
 
 export async function confirmFromKeyboard(opposite = false) {
   const pool = bulkPool();

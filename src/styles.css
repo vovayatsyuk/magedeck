@@ -519,7 +519,41 @@ button.link {
   background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   border: 1px solid var(--border);
   border-radius: 6px;
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, color 0.12s;
+}
+
+/* Hold the modifier and a button that answers to a shortcut shows the keys
+   instead of its label. The label keeps its place — it only goes invisible —
+   so no button changes width while the key is down. */
+.btn[data-key] {
+  position: relative;
+}
+
+.btn[data-key]::after {
+  content: attr(data-key);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.keyhint .btn[data-key] {
+  color: transparent;
+}
+
+.keyhint .btn[data-key]::after {
+  color: var(--text);
+  opacity: 1;
+}
+
+.keyhint .btn-primary[data-key]::after,
+.keyhint .btn-danger[data-key]::after {
+  color: var(--text-inverse);
 }
 
 .btn:hover {

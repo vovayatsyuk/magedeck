@@ -361,7 +361,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 </script>
 
 <template>
-  <div v-if="view" class="backdrop" @mousedown="onBackdropDown" @mouseup="onBackdropUp">
+  <div v-if="view" class="backdrop" :class="{ keyhint: state.keyHint }" @mousedown="onBackdropDown" @mouseup="onBackdropUp">
     <div ref="dialogEl" class="dialog" tabindex="-1" role="dialog" aria-modal="true" :style="{ width: view.width || '420px' }">
       <div class="head">
         <div class="title">{{ view.title }}</div>
@@ -518,7 +518,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 
       <div class="foot">
         <span class="foothint">{{ view.hint || `${KEYS.confirm} to confirm · esc to cancel` }}</span>
-        <button v-if="!view.dismissOnly" type="button" class="btn" @click="closeDialog">Cancel</button>
+        <button v-if="!view.dismissOnly" type="button" class="btn" :data-key="KEYS.cancel" @click="closeDialog">Cancel</button>
         <button
           v-for="a in view.extraActions"
           :key="a.label"
@@ -534,6 +534,7 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
           type="button"
           class="btn"
           :class="[view.danger ? 'btn-danger' : 'btn-primary', { off: state.checking || view.primaryOff }]"
+          :data-key="KEYS.confirmKey"
           :aria-disabled="state.checking || view.primaryOff"
           :title="missingFields.length ? `Required: ${missingLabels}` : view.primaryOff ? 'Pick modules, or search to add what it matches' : ''"
           @click="dialogPrimary"
