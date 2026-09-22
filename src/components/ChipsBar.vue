@@ -59,7 +59,7 @@ onUnmounted(() => observer?.disconnect());
     </div>
 
     <button type="button" class="btn" :data-key="keyFor('enable')" @click="applyFromButton('enable')">Enable</button>
-    <button type="button" class="btn btn-primary" :data-key="keyFor('disable')" @click="applyFromButton('disable')">Disable</button>
+    <button type="button" class="btn btn-danger" :data-key="keyFor('disable')" @click="applyFromButton('disable')">Disable</button>
   </div>
 </template>
 
