@@ -1,6 +1,15 @@
 # MageDeck
 
-Regularly switching Magento modules? This app will make your routine much easier.
+Regularly switching Magento modules? This app will make your routine much easier:
+
+ 1. Launch an app.
+ 2. Type the name of the module.
+ 3. Hit <kbd>Cmd+Enter</kbd> to toggle the module(s) status.
+
+You can also create presets for your to-go combinations and switch between them
+with two clicks.
+
+## Screenshot
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./app-screenshot-dark.webp" width="1200">
