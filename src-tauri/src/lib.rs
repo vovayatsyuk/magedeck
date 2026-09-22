@@ -1,7 +1,9 @@
 mod magento;
 mod magento_config;
+mod magento_deps;
 mod magento_io;
 mod ssh;
+mod tar;
 mod tray;
 
 use tauri::{Manager, WindowEvent};
@@ -55,6 +57,7 @@ pub fn run() {
             magento::magento_check,
             magento::module_list,
             magento::module_command,
+            magento::module_deps,
             magento::module_apply,
             magento::magento_flush,
             tray::tray_menu,

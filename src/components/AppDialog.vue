@@ -87,8 +87,14 @@ const view = computed(() => {
       width: dialog.width || '520px',
       title: dialog.title,
       subtitle: dialog.body,
+      pre: dialog.pre,
+      preMax: 240,
       primary: dialog.actions.at(-1).label,
       extraActions: dialog.actions.slice(0, -1),
+      hint: dialog.hint || undefined,
+      // esc and the backdrop still back out.
+      noCancel: dialog.noCancel,
+      danger: dialog.danger,
     };
   }
 
@@ -518,12 +524,13 @@ const setToggle = (v) => (state.form[view.value.toggle.key] = v);
 
       <div class="foot">
         <span class="foothint">{{ view.hint || `${KEYS.confirm} to confirm · esc to cancel` }}</span>
-        <button v-if="!view.dismissOnly" type="button" class="btn" :data-key="KEYS.cancel" @click="closeDialog">Cancel</button>
+        <button v-if="!view.dismissOnly && !view.noCancel" type="button" class="btn" :data-key="KEYS.cancel" @click="closeDialog">Cancel</button>
         <button
           v-for="a in view.extraActions"
           :key="a.label"
           type="button"
           class="btn"
+          :data-key="a.alt ? KEYS.confirmAltKey : undefined"
           @click="dialogAction(a)"
         >
           {{ a.label }}

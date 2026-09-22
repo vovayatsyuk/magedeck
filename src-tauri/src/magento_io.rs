@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use crate::magento::Magento;
@@ -59,6 +59,55 @@ pub(crate) fn file_exists(m: &Magento, rel: &str) -> Result<bool, String> {
         return Err(format!("There is no folder at {}", root.display()));
     }
     Ok(root.join(rel).is_file())
+}
+
+/// Files matching `patterns`, relative to the root, where `*` stands for one
+/// whole path segment. Paths are returned with their contents; a pattern that
+/// matches nothing adds nothing.
+pub(crate) fn read_many(m: &Magento, patterns: &[&str]) -> Result<Vec<(String, String)>, String> {
+    if m.kind == "ssh" {
+        return ssh::read_many(m, patterns);
+    }
+    let root = expand(m.path.trim());
+    if !root.is_dir() {
+        return Err(format!("There is no folder at {}", root.display()));
+    }
+    let mut out = Vec::new();
+    for pattern in patterns {
+        for rel in glob(&root, pattern) {
+            let text = fs::read_to_string(root.join(&rel))
+                .map_err(|e| format!("Could not read {}: {e}", location(m, &rel)))?;
+            out.push((rel, text));
+        }
+    }
+    Ok(out)
+}
+
+fn glob(root: &Path, pattern: &str) -> Vec<String> {
+    let child = |base: &str, name: &str| match base {
+        "" => name.to_string(),
+        base => format!("{base}/{name}"),
+    };
+    let mut paths = vec![String::new()];
+    for part in pattern.split('/') {
+        paths = paths
+            .into_iter()
+            .flat_map(|base| match part {
+                "*" => fs::read_dir(root.join(&base))
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .filter_map(|e| e.file_name().into_string().ok())
+                    .filter(|n| !n.starts_with('.'))
+                    .map(|n| child(&base, &n))
+                    .collect::<Vec<_>>(),
+                part => vec![child(&base, part)],
+            })
+            .collect();
+    }
+    paths.sort();
+    paths.retain(|p| root.join(p).is_file());
+    paths
 }
 
 pub(crate) fn exec(m: &Magento, lines: &[String]) -> Result<(), String> {

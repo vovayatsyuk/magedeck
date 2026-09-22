@@ -1,7 +1,9 @@
+use std::io::Read;
 use std::process::{Command, Output};
 
 use crate::magento::Magento;
 use crate::magento_io;
+use crate::tar;
 
 /// The `[user@]host` ssh is given.
 fn account(host: &str, user: Option<&str>) -> String {
@@ -141,6 +143,49 @@ pub(crate) fn file_exists(m: &Magento, rel: &str) -> Result<bool, String> {
     }
 }
 
+/// One round trip and one archive for every match: a `cat` per file would
+/// fork hundreds of times, and JSON gzips about 7x. The patterns are ours,
+/// never user input, so the remote shell may glob them unquoted; the loop
+/// keeps only what exists, since a glob matching nothing stays literal. It
+/// feeds tar on stdin: collecting into "$@" instead copies the list per file.
+/// COPYFILE_DISABLE keeps a Mac's tar from adding `._` xattr files.
+pub(crate) fn read_many(m: &Magento, patterns: &[&str]) -> Result<Vec<(String, String)>, String> {
+    let out = output(m, &read_many_script(&m.path, patterns))?;
+    let failed = |why: String| format!("Could not read {}: {why}", magento_io::location(m, ""));
+    if !out.status.success() {
+        return Err(failed(magento_io::failure_text(&out)));
+    }
+    unpack(&out.stdout).map_err(failed)
+}
+
+fn read_many_script(path: &str, patterns: &[&str]) -> String {
+    format!(
+        "cd {} || exit 1; for f in {}; do [ -f \"$f\" ] && printf '%s\\n' \"$f\"; done \
+         | COPYFILE_DISABLE=1 tar cf - -T - | gzip -1",
+        remote(path),
+        patterns.join(" ")
+    )
+}
+
+/// A real install unpacks to a few MB; the cap is for a server that sends a
+/// few KB that unpack to gigabytes.
+const UNPACKED_MAX: u64 = 64 << 20;
+
+fn unpack(gz: &[u8]) -> Result<Vec<(String, String)>, String> {
+    if gz.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut archive = Vec::new();
+    flate2::read::GzDecoder::new(gz)
+        .take(UNPACKED_MAX + 1)
+        .read_to_end(&mut archive)
+        .map_err(|e| format!("gzip: {e}"))?;
+    if archive.len() as u64 > UNPACKED_MAX {
+        return Err(format!("the files come to over {} MB", UNPACKED_MAX >> 20));
+    }
+    tar::read(&archive)
+}
+
 pub(crate) fn exec(m: &Magento, lines: &[String]) -> Result<(), String> {
     let script = format!("cd {} && {}", remote(&m.path), lines.join(" && "));
     let out = output(m, &script)?;
@@ -153,7 +198,38 @@ pub(crate) fn exec(m: &Magento, lines: &[String]) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::remote_join;
+    use super::{read_many_script, remote_join, unpack};
+    use std::process::Command;
+
+    /// The remote script, run by the local shell: same files, same order as
+    /// the local reader, and nothing for a pattern that matches nothing.
+    #[test]
+    fn the_remote_read_matches_the_local_one() {
+        let dir = std::env::temp_dir().join(format!("magedeck-ssh-{}", std::process::id()));
+        for module in ["Acme/One", "Acme/Two"] {
+            std::fs::create_dir_all(dir.join("app/code").join(module)).unwrap();
+            std::fs::write(dir.join("app/code").join(module).join("composer.json"), module).unwrap();
+        }
+        std::fs::create_dir_all(dir.join("app/etc")).unwrap();
+        std::fs::write(dir.join("app/etc/config.php"), "<?php").unwrap();
+        let root = dir.to_str().unwrap();
+        let patterns = ["app/etc/config.php", "vendor/composer/installed.json", "app/code/*/*/composer.json"];
+
+        let out = Command::new("sh").arg("-c").arg(read_many_script(root, &patterns)).output().unwrap();
+        assert!(out.status.success());
+        let local: crate::magento::Magento =
+            serde_json::from_value(serde_json::json!({"title": "t", "kind": "local", "path": root})).unwrap();
+        assert_eq!(unpack(&out.stdout).unwrap(), crate::magento_io::read_many(&local, &patterns).unwrap());
+
+        // A gzip bomb is refused, not unpacked.
+        let mut bomb = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::fast());
+        std::io::Write::write_all(&mut bomb, &vec![0u8; (super::UNPACKED_MAX + 1) as usize]).unwrap();
+        assert!(unpack(&bomb.finish().unwrap()).unwrap_err().contains("over 64 MB"));
+
+        let none = Command::new("sh").arg("-c").arg(read_many_script(root, &["nope/*.json"])).output().unwrap();
+        assert!(none.status.success() && unpack(&none.stdout).unwrap().is_empty());
+        std::fs::remove_dir_all(dir).ok();
+    }
 
     #[test]
     fn quotes_a_remote_path_but_leaves_the_tilde_to_the_shell() {

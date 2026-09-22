@@ -1,5 +1,6 @@
 use crate::magento_config::{self, Module};
-use crate::magento_io::{exec, file_exists, location, read_file};
+use crate::magento_deps;
+use crate::magento_io::{exec, file_exists, location, read_file, read_many};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::StoreExt;
@@ -242,6 +243,24 @@ pub async fn magento_flush(
 #[tauri::command]
 pub async fn module_list(app: AppHandle, magento_id: String) -> Result<Vec<Module>, String> {
     modules(&find(&app, &magento_id)?)
+}
+
+/// Each module's direct module dependencies, per composer. The caller walks
+/// it: which of them are off changes with every command, the graph does not.
+#[tauri::command]
+pub async fn module_deps(
+    app: AppHandle,
+    magento_id: String,
+) -> Result<std::collections::BTreeMap<String, Vec<String>>, String> {
+    let m = find(&app, &magento_id)?;
+    // config.php rides along: over ssh a separate read is another connection.
+    let files = read_many(&m, &[CONFIG, magento_deps::INSTALLED, magento_deps::APP_CODE])?;
+    let config = files
+        .iter()
+        .find(|(path, _)| path == CONFIG)
+        .ok_or_else(|| format!("Could not read {}", location(&m, CONFIG)))?;
+    let names: Vec<String> = magento_config::parse(&config.1).into_iter().map(|x| x.name).collect();
+    Ok(magento_deps::graph(&files, &names))
 }
 
 #[tauri::command]

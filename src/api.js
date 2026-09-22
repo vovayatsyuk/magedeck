@@ -50,6 +50,9 @@ export const trayShow = () => invoke('tray_show');
 
 export const moduleList = (magentoId) => invoke('module_list', { magentoId });
 
+/** Each module's direct module deps from composer, `{ name: [deps] }`. */
+export const moduleDeps = (magentoId) => invoke('module_deps', { magentoId });
+
 /** The command the backend will run, for the confirm dialog to show. */
 export const moduleCommand = (magentoId, verb, names, force = false) =>
   invoke('module_command', { magentoId, verb, names, force });

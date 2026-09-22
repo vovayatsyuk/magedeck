@@ -112,6 +112,45 @@ export function dependentsIn(message, asked = []) {
   return out;
 }
 
+/**
+ * Breadth-first from `names` along `edges` (module -> modules), all the way
+ * through: a module in between counts even when it needs no switching, in
+ * case one past it does. Each module in `wanted` comes as the chain that
+ * reaches it, `[asked, ..., module]`, nearest first; `names` never do.
+ */
+function reach(edges, wanted, names) {
+  const via = new Map(names.map((n) => [n, null]));
+  const chain = (name) => (name === null ? [] : [...chain(via.get(name)), name]);
+  const out = [];
+  const queue = [...names];
+  while (queue.length) {
+    // Shifted outside `?.[]`: missing edges would short-circuit the shift.
+    const name = queue.shift();
+    for (const next of edges?.[name] ?? []) {
+      if (via.has(next)) continue;
+      via.set(next, name);
+      queue.push(next);
+      if (wanted.has(next)) out.push(chain(next));
+    }
+  }
+  return out;
+}
+
+/** The disabled modules that enabling `names` needs, per `graph`
+ *  (module -> direct deps), as chains `[asked, ..., dep]`. */
+export function missingDeps(graph, modules, names) {
+  return reach(graph, new Set(modules.filter((m) => !m.on).map((m) => m.name)), names);
+}
+
+/** The enabled modules that need `names`, as chains `[asked, ..., dependent]`. */
+export function liveDependents(graph, modules, names) {
+  const dependents = {};
+  for (const [name, deps] of Object.entries(graph ?? {})) {
+    for (const dep of deps) (dependents[dep] ??= []).push(name);
+  }
+  return reach(dependents, new Set(modules.filter((m) => m.on).map((m) => m.name)), names);
+}
+
 /** Migrates history rows written before verb and names were stored as
  *  fields. Nothing else parses a command string; the backend owns those. */
 export function legacyEntry(cmd) {

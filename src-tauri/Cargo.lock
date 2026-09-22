@@ -2038,6 +2038,7 @@ name = "magedeck"
 version = "1.0.1"
 dependencies = [
  "fix-path-env",
+ "flate2",
  "gdkx11",
  "gtk",
  "serde",

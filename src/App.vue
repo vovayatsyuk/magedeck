@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { state, init, confirmFromKeyboard, dialogPrimary, closeDialog, reloadModules, mac } from './store.js';
+import { state, init, confirmFromKeyboard, dialogPrimary, dialogAlt, closeDialog, reloadModules, mac } from './store.js';
 import { initTray } from './tray.js';
 import FilterPanel from './components/FilterPanel.vue';
 import ModuleList from './components/ModuleList.vue';
@@ -37,7 +37,7 @@ function onKeydown(e) {
   }
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
-    if (open) dialogPrimary();
+    if (open) e.shiftKey ? dialogAlt() : dialogPrimary();
     // Shift forces the opposite verb, so a mixed set can still be disabled.
     else confirmFromKeyboard(e.shiftKey);
     return;

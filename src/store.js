@@ -11,6 +11,8 @@ import {
   legacyEntry,
   entryTime,
   dependentsIn,
+  missingDeps,
+  liveDependents,
   plural,
   BUILTIN_FILTERS,
   matches,
@@ -149,6 +151,21 @@ export async function init() {
   });
 }
 
+// The composer graph, fetched once per install and again on a reload: it
+// changes only when packages do. A failure leaves no graph, and enabling
+// then goes ahead without the deps check.
+let deps = { id: null, graph: null };
+
+function loadDeps(id) {
+  const graph = api.moduleDeps(id).catch((error) => {
+    console.warn('module:deps failed', error);
+    return null;
+  });
+  deps = { id, graph };
+}
+
+const depsGraph = () => (deps.id === state.magentoId ? deps.graph : null);
+
 // Runs after every command too: a partial failure may leave states unapplied. Never throws.
 async function refreshModules(id = state.magentoId) {
   try {
@@ -167,6 +184,7 @@ export async function reloadModules() {
   state.switching = true;
   try {
     await refreshModules();
+    loadDeps(state.magentoId);
     // A module gone from config.php cannot stay selected.
     const names = new Set(state.modules.map((m) => m.name));
     for (const name of Object.keys(state.checked)) if (!names.has(name)) delete state.checked[name];
@@ -198,6 +216,8 @@ export async function selectMagento(id) {
     ]);
     state.snapshots = snapshots ?? [];
     state.history = history.map(migrateEntry);
+    // After the modules: the graph only counts names config.php lists.
+    loadDeps(id);
     await api.saveLastMagentoId(id);
     // `null` means never stored; an empty list means the user cleared them.
     if (snapshots === null) await ensureInitialSnapshot();
@@ -340,8 +360,46 @@ export async function flushCache(staticContent) {
   }
 }
 
-export const apply = (verb, names, title, opts) =>
+const plan = (verb, names, title, opts) =>
   verb === 'enable' ? applyPlan(names, [], title, opts) : applyPlan([], names, title, opts);
+
+/** An enable first asks about the disabled modules composer says it needs,
+ *  a disable about the enabled ones that need it. */
+export async function apply(verb, names, title, opts) {
+  if (state.running) return false;
+  const find = verb === 'enable' ? missingDeps : liveDependents;
+  const chains = find(await depsGraph(), state.modules, names);
+  if (!chains.length) return plan(verb, names, title, opts);
+  confirmDeps(verb, names, chains, title, opts);
+  return false;
+}
+
+// Laid out like the error a disable hits, chains in Magento's own `A->B`,
+// the module that needs on the left. Locked ones are shown but left out, as
+// a retry with deps leaves them. A disable as is forces past the dependents,
+// which Magento would refuse otherwise.
+function confirmDeps(verb, names, chains, title, opts) {
+  const on = verb === 'enable';
+  const extra = unlocked(chains.map((c) => c.at(-1)));
+  const run = (more, as, force = false) => plan(verb, more, as, { ...opts, force });
+  openDialog('confirm', {}, {
+    title: on ? 'Enable with dependencies?' : 'Disable with dependents?',
+    pre: chains
+      .map((c) => `${(on ? c : [...c].reverse()).join('->')}${lockedSet.value.has(c.at(-1)) ? '  (locked, skipped)' : ''}`)
+      .join('\n'),
+    width: '600px',
+    noCancel: true,
+    danger: !on,
+    hint: extra.length ? `${KEYS.confirmKey} with ${on ? 'deps' : 'dependents'} · ${KEYS.confirmAltKey} as is` : '',
+    actions: [
+      { label: 'Only selected', onOk: () => run(names, title, !on), alt: true },
+      extra.length && {
+        label: `${on ? 'Enable with deps' : 'Disable with dependents'} (+${extra.length})`,
+        onOk: () => run([...names, ...extra], `${title} + deps`),
+      },
+    ].filter(Boolean),
+  });
+}
 
 export async function confirmApply(verb, modules, { scope, fromSelection = false, source = null } = {}) {
   const names = modules.map((m) => m.name);
@@ -896,6 +954,13 @@ export async function dialogPrimary() {
       await saveMagento(install);
     }
   });
+}
+
+/** ⌘⇧↩: the action marked `alt`, or else the primary, as before. */
+export async function dialogAlt() {
+  const action = state.dialog?.actions?.find((a) => a.alt);
+  if (action) await dialogAction(action);
+  else await dialogPrimary();
 }
 
 export async function dialogAction(action) {

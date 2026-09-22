@@ -9,6 +9,8 @@ import {
   pickTargets,
   legacyEntry,
   dependentsIn,
+  missingDeps,
+  liveDependents,
   rangeSelect,
   selectedNames,
   keepOnly,
@@ -364,4 +366,23 @@ test('withDayDividers: one divider per earlier day, none for today', () => {
     out.map((r) => (r.divider ? r.label : r.id)),
     ['a', 'yesterday', 'b', 'c', 'd', '3 days ago', 'e'],
   );
+});
+
+test('missingDeps walks through enabled deps and returns only disabled ones', () => {
+  const graph = { A: ['B', 'C'], B: ['D'], C: ['A'], D: ['E'] };
+  const modules = [mod('A', 'x', false), mod('B', 'x', true), mod('C', 'x', false), mod('D', 'x', false), mod('E', 'x', false)];
+  assert.deepEqual(missingDeps(graph, modules, ['A']), [['A', 'C'], ['A', 'B', 'D'], ['A', 'B', 'D', 'E']]);
+  assert.deepEqual(
+    missingDeps(graph, modules, ['A', 'C']).map((c) => c.at(-1)),
+    ['D', 'E'],
+    'asked-for modules are not deps',
+  );
+  assert.deepEqual(missingDeps(null, modules, ['A']), []);
+});
+
+test('liveDependents walks the graph backwards and returns only enabled ones', () => {
+  const graph = { A: ['B'], B: ['C'], D: ['C'], E: ['A'] };
+  const modules = [mod('A', 'x', false), mod('B', 'x', true), mod('C', 'x', true), mod('D', 'x', true), mod('E', 'x', true)];
+  assert.deepEqual(liveDependents(graph, modules, ['C']), [['C', 'B'], ['C', 'D'], ['C', 'B', 'A', 'E']]);
+  assert.deepEqual(liveDependents(null, modules, ['C']), []);
 });
