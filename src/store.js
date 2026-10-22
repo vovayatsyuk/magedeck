@@ -242,9 +242,10 @@ export function toggleModule(name, event) {
 export function toggleAll() {
   lastIndex = null;
   const rows = visible.value;
-  const allChecked = rows.length > 0 && rows.every((m) => state.checked[m.name]);
+  // Any visible row checked: clear them; none checked: check them all.
+  const anyChecked = rows.some((m) => state.checked[m.name]);
   for (const m of rows) {
-    if (allChecked) delete state.checked[m.name];
+    if (anyChecked) delete state.checked[m.name];
     else if (!state.checked[m.name]) state.checked[m.name] = nextSeq();
   }
 }

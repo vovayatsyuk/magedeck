@@ -76,6 +76,13 @@ watchEffect(() => {
   if (allEl.value) allEl.value.indeterminate = someChecked.value && !allChecked.value;
 });
 
+// From the indeterminate state the click clears rows, but the browser has
+// already ticked the box and `allChecked` stays false, so Vue won't untick it.
+function onToggleAll(event) {
+  toggleAll();
+  event.target.checked = allChecked.value;
+}
+
 // Drag-painting: the pressed row decides the target state and every row
 // dragged across takes it. Shift-click still means range select.
 let paintTo = null;
@@ -274,7 +281,7 @@ defineExpose({ focusSearch: () => searchEl.value?.focus() });
           type="checkbox"
           title="Select all"
           :checked="allChecked"
-          @change="toggleAll"
+          @change="onToggleAll"
         />
       </div>
       <label for="select-all-modules" class="eyebrow">Modules</label>
