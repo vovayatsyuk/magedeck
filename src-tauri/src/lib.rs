@@ -16,6 +16,12 @@ pub fn run() {
     if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
         std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     }
+    // On native Wayland GTK's title bar buttons stop taking clicks until the
+    // window is resized, and the tray's X11 raise has nothing to talk to.
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("GDK_BACKEND").is_none() {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
 
     std::thread::spawn(|| {
         let _ = fix_path_env::fix();
