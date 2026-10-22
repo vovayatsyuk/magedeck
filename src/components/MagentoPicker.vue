@@ -389,11 +389,13 @@ onUnmounted(() => {
 }
 
 .itempath {
+  display: flex;
   font-size: 11px;
   color: var(--text-dim);
 }
 
 .dir {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
