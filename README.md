@@ -43,4 +43,5 @@ in your system settings.
 ```bash
 npm install
 npm run tauri dev
+npm version [patch|minor|major]
 ```
